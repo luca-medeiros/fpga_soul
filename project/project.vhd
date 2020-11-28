@@ -1,3 +1,4 @@
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
@@ -133,7 +134,7 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
 
 	process(FPGA_RSTB, CLK)
 		Begin
-			if FPGA_RSTB = '0' then -- reset = '0' 일
+			if FPGA_RSTB = '0' then -- reset = '0' 일??
 				for i in 0 to 31 loop
 					reg_file(i) <= X"20"; -- LED 초기화,X"20" 은 빈 공간 의미
 				end loop;
@@ -585,7 +586,7 @@ begin
 								pattern_num <= "01";
 								pattern_count <= "10011";
 							when "10" =>
-								pattern_nun <= "10";
+								pattern_num <= "10";
 								pattern_count <= "10011";
 							when "11" =>
 								pattern_num <= "11";
@@ -598,38 +599,66 @@ begin
 				--패턴 1 : 1줄 화살 x 3 -> 2줄 화살 x 3 -> 1줄 화살  x 3
 				--      or 2줄 화살 x 3 -> 1줄 화살 x 3 -> 2줄 화살  x 3
 				elsif (pattern_num = "01") then
-					case pattern_count is
-						when "10010" =>
-							arrow_pixel(conv_integer(random_fixed & "1011")) <= "1";
-						when "10001" =>
-							arrow_pixel(conv_integer(random_fixed & "1011")) <= "1";
-						when "10000" =>
-							arrow_pixel(conv_integer(random_fixed & "1011")) <= "1";
-						when "10000" =>
-							arrow_pixel(conv_integer(random_fixed & "1011")) <= "1";
-						when "01011" =>
-							arrow_pixel(conv_integer((not (random_fixed)) & "1011")) <= "1";
-						when "01010" =>
-							arrow_pixel(conv_integer((not (random_fixed)) & "1011")) <= "1";
-						when "01001" =>
-							arrow_pixel(conv_integer((not (random_fixed)) & "1011")) <= "1";
-						when "00100" =>
-							arrow_pixel(conv_integer(random_fixed & "1011")) <= "1";
-						when "00011" =>
-							arrow_pixel(conv_integer(random_fixed & "1011")) <= "1";
-						when "00010" =>
-							arrow_pixel(conv_integer(random_fixed & "1011")) <= "1";
-						--첫번째 패턴 종료. (0.5초 ~ 1.25초) 대기시간을 갖는 대기 패턴으로 넘어감
-						when "00000" =>
-							pattern_num <= "00";
-							pattern_count <= "00010" + ("000" & ran1dom_count(1 downto 0));
-						when others =>
-							NULL;
-					end case;
+					if (random_fixed = '1') then
+						case pattern_count is
+							when "10010" =>
+								arrow_pixel(13) <= '1';
+							when "10001" =>
+								arrow_pixel(13) <= '1';
+							when "10000" =>
+								arrow_pixel(13) <= '1';
+							when "01011" =>
+								arrow_pixel(29) <= '1';
+							when "01010" =>
+								arrow_pixel(29) <= '1';
+							when "01001" =>
+								arrow_pixel(29) <= '1';
+							when "00100" =>
+								arrow_pixel(13) <= '1';
+							when "00011" =>
+								arrow_pixel(13) <= '1';
+							when "00010" =>
+								arrow_pixel(13) <= '1';
+							--첫번째 패턴 종료. (0.5초 ~ 1.25초) 대기시간을 갖는 대기 패턴으로 넘어감
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+					else
+						case pattern_count is
+							when "10010" =>
+								arrow_pixel(29) <= '1';
+							when "10001" =>
+								arrow_pixel(29) <= '1';
+							when "10000" =>
+								arrow_pixel(29) <= '1';
+							when "01011" =>
+								arrow_pixel(13) <= '1';
+							when "01010" =>
+								arrow_pixel(13) <= '1';
+							when "01001" =>
+								arrow_pixel(13) <= '1';
+							when "00100" =>
+								arrow_pixel(29) <= '1';
+							when "00011" =>
+								arrow_pixel(29) <= '1';
+							when "00010" =>
+								arrow_pixel(29) <= '1';
+							--첫번째 패턴 종료. (0.5초 ~ 1.25초) 대기시간을 갖는 대기 패턴으로 넘어감
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+					end if;
+
 				--패턴 2 : 추후 추가
 				end if;
 			--보스 2 행동 정의
-			elsif (stage = "10") then
+			elsif (stage_data = "10") then
 			end if;
 		end if;
 	end process;
