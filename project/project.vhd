@@ -544,6 +544,7 @@ begin
 				--보스 변경됨 -> 대기패턴 강제 전환 및 1.75초 ~ 2.5초 대기
 				pattern_num <= "00";
 				pattern_count <= "00110" + ("000" & random_count(1 downto 0));
+				stage_data_saved <= stage_data;
 			end if;
 			for i in 0 to 31 loop
 				--화살 : 다음 패턴 클락에서 각 열의 마지막 칸-소멸, 그 외-한칸 좌측으로 이동.
