@@ -587,10 +587,10 @@ begin
 								pattern_count <= "10011";
 							when "10" =>
 								pattern_num <= "10";
-								pattern_count <= "10011";
+								pattern_count <= "11001";
 							when "11" =>
 								pattern_num <= "11";
-								pattern_count <= "10000";
+								pattern_count <= "11111";
 							when others =>
 								pattern_num <= "00";
 								pattern_count <= "00001";
@@ -599,7 +599,8 @@ begin
 				--패턴 1 : 1줄 화살 x 3 -> 2줄 화살 x 3 -> 1줄 화살  x 3
 				--      or 2줄 화살 x 3 -> 1줄 화살 x 3 -> 2줄 화살  x 3
 				elsif (pattern_num = "01") then
-					if (random_fixed = '1') then
+					pattern_count <= pattern_count - 1;
+					if (random_fixed = '0') then
 						case pattern_count is
 							when "10010" =>
 								arrow_pixel(13) <= '1';
@@ -655,7 +656,206 @@ begin
 						end case;
 					end if;
 
-				--패턴 2 : 추후 추가
+				--패턴 2 : 상단 -> 4 패턴클락마다 상단 -> 화살 발사/ 하단 -> 전체공격 or 상단 -> 4패턴클락마다 전체공격 / 하단 -> 화살 발사 
+				elsif (pattern_num = "10") then
+					pattern_count <= pattern_count - 1;
+					if (random_fixed = '0') then
+						case pattern_count is
+							when "11000" =>
+								arrow_pixel(13) <= '1';
+								first_warning(16) <= '1';
+								first_warning(17) <= '1';
+								first_warning(18) <= '1';
+								first_warning(19) <= '1';
+								first_warning(20) <= '1';
+								first_warning(21) <= '1';
+								first_warning(22) <= '1';
+								first_warning(23) <= '1';
+								first_warning(24) <= '1';
+								first_warning(25) <= '1';
+								first_warning(26) <= '1';
+								first_warning(27) <= '1';
+								first_warning(28) <= '1';
+								first_warning(29) <= '1';
+							when "10000" =>
+								arrow_pixel(13) <= '1';
+								first_warning(16) <= '1';
+								first_warning(17) <= '1';
+								first_warning(18) <= '1';
+								first_warning(19) <= '1';
+								first_warning(20) <= '1';
+								first_warning(21) <= '1';
+								first_warning(22) <= '1';
+								first_warning(23) <= '1';
+								first_warning(24) <= '1';
+								first_warning(25) <= '1';
+								first_warning(26) <= '1';
+								first_warning(27) <= '1';
+								first_warning(28) <= '1';
+								first_warning(29) <= '1';
+							when "01000" =>
+								arrow_pixel(13) <= '1';
+								first_warning(16) <= '1';
+								first_warning(17) <= '1';
+								first_warning(18) <= '1';
+								first_warning(19) <= '1';
+								first_warning(20) <= '1';
+								first_warning(21) <= '1';
+								first_warning(22) <= '1';
+								first_warning(23) <= '1';
+								first_warning(24) <= '1';
+								first_warning(25) <= '1';
+								first_warning(26) <= '1';
+								first_warning(27) <= '1';
+								first_warning(28) <= '1';
+								first_warning(29) <= '1';
+							--두번째 패턴 종료. (0.5초 ~ 1.25초) 대기시간을 갖는 대기 패턴으로 넘어감
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+					else
+						case pattern_count is
+							when "11000" =>
+								arrow_pixel(29) <= '1';
+								first_warning(0) <= '1';
+								first_warning(1) <= '1';
+								first_warning(2) <= '1';
+								first_warning(3) <= '1';
+								first_warning(4) <= '1';
+								first_warning(5) <= '1';
+								first_warning(6) <= '1';
+								first_warning(7) <= '1';
+								first_warning(8) <= '1';
+								first_warning(9) <= '1';
+								first_warning(10) <= '1';
+								first_warning(11) <= '1';
+								first_warning(12) <= '1';
+							when "10000" =>
+								arrow_pixel(29) <= '1';
+								first_warning(0) <= '1';
+								first_warning(1) <= '1';
+								first_warning(2) <= '1';
+								first_warning(3) <= '1';
+								first_warning(4) <= '1';
+								first_warning(5) <= '1';
+								first_warning(6) <= '1';
+								first_warning(7) <= '1';
+								first_warning(8) <= '1';
+								first_warning(9) <= '1';
+								first_warning(10) <= '1';
+								first_warning(11) <= '1';
+								first_warning(12) <= '1';
+							when "01000" =>
+								arrow_pixel(29) <= '1';
+								first_warning(0) <= '1';
+								first_warning(1) <= '1';
+								first_warning(2) <= '1';
+								first_warning(3) <= '1';
+								first_warning(4) <= '1';
+								first_warning(5) <= '1';
+								first_warning(6) <= '1';
+								first_warning(7) <= '1';
+								first_warning(8) <= '1';
+								first_warning(9) <= '1';
+								first_warning(10) <= '1';
+								first_warning(11) <= '1';
+								first_warning(12) <= '1';
+							--두번째 패턴 종료. (0.5초 ~ 1.25초) 대기시간을 갖는 대기 패턴으로 넘어감
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+					end if;
+				-- 패턴 3 : 2패턴 클락마다, 세로열 한줄 공격 및 전진. 8패턴 클락마다 반복하여 5회 진행
+				elsif (pattern_num = "11") then
+					pattern_count <= pattern_count - 1;
+					case pattern_count is
+						when "11110" =>
+							first_warning(29) <= '1';
+						when "11100" =>
+							first_warning(12) <= '1';
+							first_warning(28) <= '1';
+						when "11010" =>
+							first_warning(11) <= '1';
+							first_warning(27) <= '1';
+						when "11000" =>
+							first_warning(10) <= '1';
+							first_warning(26) <= '1';
+						when "10110" =>
+							first_warning(9) <= '1';
+							first_warning(25) <= '1';
+							first_warning(29) <= '1';
+						when "10100" =>
+							first_warning(8) <= '1';
+							first_warning(24) <= '1';
+							first_warning(12) <= '1';
+							first_warning(28) <= '1';
+						when "10010" =>
+							first_warning(7) <= '1';
+							first_warning(23) <= '1';
+							first_warning(11) <= '1';
+							first_warning(27) <= '1';	
+						when "10000" =>
+							first_warning(6) <= '1';
+							first_warning(22) <= '1';
+							first_warning(10) <= '1';
+							first_warning(26) <= '1';
+						when "01110" =>
+							first_warning(5) <= '1';
+							first_warning(21) <= '1';
+							first_warning(9) <= '1';
+							first_warning(25) <= '1';
+							first_warning(29) <= '1';
+						when "01100" =>
+							first_warning(4) <= '1';
+							first_warning(20) <= '1';
+							first_warning(8) <= '1';
+							first_warning(24) <= '1';
+							first_warning(12) <= '1';
+							first_warning(28) <= '1';
+						when "01010" =>
+							first_warning(3) <= '1';
+							first_warning(19) <= '1';
+							first_warning(7) <= '1';
+							first_warning(23) <= '1';
+							first_warning(11) <= '1';
+							first_warning(27) <= '1';
+						when "01000" =>
+							first_warning(2) <= '1';
+							first_warning(18) <= '1';
+							first_warning(6) <= '1';
+							first_warning(22) <= '1';
+							first_warning(10) <= '1';
+							first_warning(26) <= '1';	
+						when "00100" =>
+							first_warning(1) <= '1';
+							first_warning(17) <= '1';
+							first_warning(5) <= '1';
+							first_warning(21) <= '1';
+							first_warning(9) <= '1';
+							first_warning(25) <= '1';
+							first_warning(29) <= '1';
+						when "00010" =>
+							first_warning(0) <= '1';
+							first_warning(16) <= '1';
+							first_warning(4) <= '1';
+							first_warning(20) <= '1';
+							first_warning(8) <= '1';
+							first_warning(24) <= '1';
+							first_warning(12) <= '1';	
+							first_warning(28) <= '1';							
+						--세번째 패턴 종료. (1초 ~ 1.5초) 대기시간을 갖는 대기 패턴으로 넘어감
+						when "00000" =>
+							pattern_num <= "00";
+							pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+						when others =>
+							NULL;
+					end case;
 				end if;
 			--보스 2 행동 정의
 			elsif (stage_data = "10") then
