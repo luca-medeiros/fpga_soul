@@ -75,7 +75,7 @@ architecture Behavioral of project is
            SEG_G : out  STD_LOGIC;
            SEG_DP : out  STD_LOGIC);
 	end component;
--- ³»ºÎ½ÅÈ£ Á¤ÀÇ	
+-- ë‚´ë¶€ì‹ í˜¸ ì •ì˜	
 signal data_out_reg, w_enable_reg : std_logic; 
 signal addr_reg : std_logic_vector(4 downto 0); 
 signal data_reg : std_logic_vector(7 downto 0);
@@ -91,7 +91,7 @@ signal attack_1 , attack_2 : std_logic;
 				SEG_D,SEG_E,SEG_F,SEG_G,SEG_DP);
 end Behavioral;
 
-library IEEE; --LED ¼³Á¤ ¹× ÃÊ±âÈ­ ºÎºĞ
+library IEEE; --LED ì„¤ì • ë° ì´ˆê¸°í™” ë¶€ë¶„
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -112,18 +112,18 @@ entity LCD_test is
 end LCD_test;
 
 architecture Behavioral of LCD_test is
---³»ºÎ½ÅÈ£ Á¤ÀÇ
+--ë‚´ë¶€ì‹ í˜¸ ì •ì˜
 type reg is array( 0 to 31 ) of std_logic_vector( 7 downto 0 ); -- 2D array
 signal reg_file : reg;
 signal w_enable_reg : std_logic;
 signal lcd_cnt : std_logic_vector (8 downto 0);
-signal lcd_state : std_logic_vector (7 downto 0); --lcd_db¸¦ ¹Ş°í, clock¿¡ µû¶ó ÀÌµ¿
+signal lcd_state : std_logic_vector (7 downto 0); --lcd_dbë¥¼ ë°›ê³ , clockì— ë”°ë¼ ì´ë™
 signal lcd_nstate : std_logic_vector (7 downto 0);-- lcd_state next state
-signal lcd_db : std_logic_vector (7 downto 0);-- outputÀ» Àü´ŞÇÏ´Â ³»ºÎ½ÅÈ£
+signal lcd_db : std_logic_vector (7 downto 0);-- outputì„ ì „ë‹¬í•˜ëŠ” ë‚´ë¶€ì‹ í˜¸
 signal stage_cnt: std_logic_vector(1 downto 0);
 begin
 	process(FPGA_RSTB, CLK) 
-	--clockÀÇ »ó½Â¿§Áö¿¡ µû¶ó lcd_State°¡ ´ÙÀ½»óÅÂ·Î ³Ñ¾Æ°¨
+	--clockì˜ ìƒìŠ¹ì—£ì§€ì— ë”°ë¼ lcd_Stateê°€ ë‹¤ìŒìƒíƒœë¡œ ë„˜ì•„ê°
 		Begin
 			if FPGA_RSTB = '0' then
 				lcd_state <= (others =>'0');
@@ -131,19 +131,19 @@ begin
 				lcd_state <= lcd_nstate;
 			end if;
 	end process;
---LCD ÃÊ±âÈ­ ÇÒ½Ã enable_reg´Â 0, LCD¿¡ Ãâ·ÂÇÏ´ÂÁöÀÇ ¿©ºÎ ÆÇ´Ü
+--LCD ì´ˆê¸°í™” í• ì‹œ enable_regëŠ” 0, LCDì— ì¶œë ¥í•˜ëŠ”ì§€ì˜ ì—¬ë¶€ íŒë‹¨
 w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
 
 	process(FPGA_RSTB, CLK)
 		Begin
-			if FPGA_RSTB = '0' then -- reset = '0' ÀÏ??
+			if FPGA_RSTB = '0' then -- reset = '0' ì¼??
 				for i in 0 to 31 loop
-					reg_file(i) <= X"20"; -- LED ÃÊ±âÈ­,X"20" Àº ºó °ø°£ ÀÇ¹Ì
+					reg_file(i) <= X"20"; -- LED ì´ˆê¸°í™”,X"20" ì€ ë¹ˆ ê³µê°„ ì˜ë¯¸
 				end loop;
 			elsif CLK'event and CLK='1' then
-			-- LED¿¡ data °ª¿¡ µû¶ó °ªÀÌ Ç¥Çö
-				if w_enable_reg ='1' and data_out ='1' then--LCD¿¡ Ãâ·ÂÀ» ÇÒ¶§
-					reg_file(conv_integer(addr)) <= data;--reg_file¿¡ Àü´Ş
+			-- LEDì— data ê°’ì— ë”°ë¼ ê°’ì´ í‘œí˜„
+				if w_enable_reg ='1' and data_out ='1' then--LCDì— ì¶œë ¥ì„ í• ë•Œ
+					reg_file(conv_integer(addr)) <= data;--reg_fileì— ì „ë‹¬
 				end if;
 			end if;
 	end process;
@@ -152,7 +152,7 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
 		Begin
 			if FPGA_RSTB='0' then
 				lcd_nstate <= X"00";
-				stage_cnt <= "00"; --stage ÃÊ±âÈ­
+				stage_cnt <= "00"; --stage ì´ˆê¸°í™”
 			else
 				case lcd_state is
 					when X"00" => lcd_db <= "00111000" ; -- Function set
@@ -169,7 +169,7 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
 						lcd_nstate <= X"06" ;
 					when X"06" => lcd_db <= "01000000" ; --set CGRAM(X"00") player1
 						lcd_nstate <= X"07";
-						stage_cnt<= stage;--state º¯È­ °¨Áö
+						stage_cnt<= stage;--state ë³€í™” ê°ì§€
 					when X"07" => lcd_db <= "00001110" ; --0***0
 						lcd_nstate <= X"08";
 					when X"08" => lcd_db <= "00001010" ; --0*0*0
@@ -428,9 +428,9 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
 						lcd_nstate <=X"6F" ;
 					when X"6F" => lcd_db <= reg_file(31);
 						if (stage_cnt = stage) then 
-							lcd_nstate <=X"4E"; --Return home(Stage°¡ °°À»¶§)
+							lcd_nstate <=X"4E"; --Return home(Stageê°€ ê°™ì„ë•Œ)
 						else
-							lcd_nstate <= X"06"; --Cgram set(stage°¡ º¯ÇÒ¶§)
+							lcd_nstate <= X"06"; --Cgram set(stageê°€ ë³€í• ë•Œ)
 						end if;
 					when others => lcd_db <= (others => '0') ;
 				end case;
@@ -459,7 +459,7 @@ LCD_A(0) <= '0' when lcd_state=X"5F" or lcd_state = X"4E" or lcd_state <= X"06"
 		 (X"46"<=lcd_state and lcd_state<=X"4D")
 		else '1';
 		 
--- LCD_state µû¸¥ LCD_A ±¸ºĞ
+-- LCD_state ë”°ë¥¸ LCD_A êµ¬ë¶„
 					
 LCD_EN <= CLK; --LCD_EN <= '0' when w_enable_reg='0' else clk_100;
 LCD_D <= lcd_db; -- LCD display data
@@ -468,7 +468,7 @@ end Behavioral;
 
 
 
-library IEEE; -- ÀÔ·Â°ª »ı¼º ¹× ¿¬»ê ºÎºĞ
+library IEEE; -- ì…ë ¥ê°’ ìƒì„± ë° ì—°ì‚° ë¶€ë¶„
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -491,16 +491,18 @@ entity data_gen is
 		   stage: out std_logic_vector(1 downto 0));
 end data_gen;
 architecture Behavioral of data_gen is
---³»ºÎ½ÅÈ£ Á¤ÀÇ
+--ë‚´ë¶€ì‹ í˜¸ ì •ì˜
 	signal patern_clk : std_logic;
 	signal random_count : std_logic_vector (6 downto 0);
 	signal stage_data : std_logic_vector (1 downto 0);
 	signal stage_data_saved : std_logic_vector (1 downto 0);
 	signal pattern_num : std_logic_vector (1 downto 0);
 	signal pattern_count : std_logic_vector (4 downto 0);
-	
+	signal cnt : std_logic_vector(4 downto 0);
+
 	type reg is array( 0 to 31 ) of std_logic_vector( 7 downto 0 ); -- 2D array
 	signal reg_file : reg;
+	signal clear_reg : reg;
 	
 	type pixel_data is array( 0 to 31 ) of std_logic; -- 2D array
 	signal arrow_pixel : pixel_data;
@@ -511,27 +513,27 @@ architecture Behavioral of data_gen is
 
 	
 begin
-	--4HZÀÇ patern_clock±¸Çö, 0.25ÃÊ¿¡ ÇØ´ç
+	--4HZì˜ patern_clockêµ¬í˜„, 0.25ì´ˆì— í•´ë‹¹
 	process(FPGA_RSTB,clk)
-	--4HZ¸¦ ±¸ÇöÇÏ±âÀ§ÇÑ clk º¯¼ö count_clk ¼±¾ğ
+	--4HZë¥¼ êµ¬í˜„í•˜ê¸°ìœ„í•œ clk ë³€ìˆ˜ count_clk ì„ ì–¸
 		variable patern_clk_cnt : integer range 0 to 500000;
 	begin
 		if(FPGA_RSTB = '0')then
 			patern_clk <= '1';
 			patern_clk_cnt := 0;
 		elsif(clk'event and clk='1')then
-		--0.125ÃÊ ÁÖ±â·Î clk °ª º¯È­, 500000 ¼¼°í 0>1,1>0À¸·Î ¹Ù²Ş
+		--0.125ì´ˆ ì£¼ê¸°ë¡œ clk ê°’ ë³€í™”, 500000 ì„¸ê³  0>1,1>0ìœ¼ë¡œ ë°”ê¿ˆ
 			if(patern_clk_cnt = 500000)then
 				patern_clk_cnt := 0;
 				patern_clk <= not patern_clk;
 			else
-			--500000º¸´Ù ÀÛÀ¸¸é 1¾¿ Áõ°¡
+			--500000ë³´ë‹¤ ì‘ìœ¼ë©´ 1ì”© ì¦ê°€
 				patern_clk_cnt := patern_clk_cnt +1;
 			end if;
 		end if;
 	end process;	
 
-	--¸Å pattern clock(0.25ÃÊ)¸¶´Ù actionÀ» Á¤ÀÇ
+	--ë§¤ pattern clock(0.25ì´ˆ)ë§ˆë‹¤ actionì„ ì •ì˜
 	process(FPGA_RSTB,patern_clk)
 		variable pattern_select : std_logic_vector (1 downto 0);
 		variable random_fixed : std_logic;
@@ -549,42 +551,42 @@ begin
 
 		elsif(clk'event and clk='1')then
 			if (stage_data_saved /= stage_data) then
-				--º¸½º º¯°æµÊ -> ´ë±âÆĞÅÏ °­Á¦ ÀüÈ¯ ¹× 1.75ÃÊ ~ 2.5ÃÊ ´ë±â
+				--ë³´ìŠ¤ ë³€ê²½ë¨ -> ëŒ€ê¸°íŒ¨í„´ ê°•ì œ ì „í™˜ ë° 1.75ì´ˆ ~ 2.5ì´ˆ ëŒ€ê¸°
 				pattern_num <= "00";
 				pattern_count <= "00110" + ("000" & random_count(1 downto 0));
 				stage_data_saved <= stage_data;
 			end if;
 			for i in 0 to 31 loop
-				--È­»ì : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ °¢ ¿­ÀÇ ¸¶Áö¸· Ä­-¼Ò¸ê, ±× ¿Ü-ÇÑÄ­ ÁÂÃøÀ¸·Î ÀÌµ¿.
+				--í™”ì‚´ : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ ê° ì—´ì˜ ë§ˆì§€ë§‰ ì¹¸-ì†Œë©¸, ê·¸ ì™¸-í•œì¹¸ ì¢Œì¸¡ìœ¼ë¡œ ì´ë™.
 				if (arrow_pixel(i) = '1') then
 					arrow_pixel(i) <='0';
 					if ((i /= 0) and (i /= 16)) then
 						arrow_pixel(i - 1) <= '1';
 					end if;
 				end if;
-				--ÇÈ¼¿ Æø¹ß : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ ¼Ò¸ê
+				--í”½ì…€ í­ë°œ : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ ì†Œë©¸
 				if (pixel_explosion(i) = '1')then
 					pixel_explosion(i) <= '0';
 				end if;
-				--°æ°í_2 : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ ÇÈ¼¿ Æø¹ß À¯¹ß	
+				--ê²½ê³ _2 : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ í”½ì…€ í­ë°œ ìœ ë°œ	
 				if (second_warning(i) = '1')then
 					second_warning(i) <= '0';
 					pixel_explosion(i) <= '1';
 				end if;
-				--°æ°í_1 : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ °æ°í_2 À¯¹ß(ÇÃ·¹ÀÌ¾î ´«¿¡´Â º¯È­ ¾øÀ½.)
+				--ê²½ê³ _1 : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ ê²½ê³ _2 ìœ ë°œ(í”Œë ˆì´ì–´ ëˆˆì—ëŠ” ë³€í™” ì—†ìŒ.)
 				if (first_warning(i) = '1')then
 					first_warning(i) <= '0';
 					second_warning(i) <= '1';
 				end if;
 			end loop;
-			--º¸½º 1 Çàµ¿ Á¤ÀÇ
+			--ë³´ìŠ¤ 1 í–‰ë™ ì •ì˜
 			if (stage_data = "01") then
-				--´ë±â ÆĞÅÏ
+				--ëŒ€ê¸° íŒ¨í„´
 				if (pattern_num = "00") then
-					--pattern_count°¡ 0ÀÌ µÉ ¶§ ±îÁö 1¾¿ °¨¼Ò½ÃÅ°¸ç ´ë±â
+					--pattern_countê°€ 0ì´ ë  ë•Œ ê¹Œì§€ 1ì”© ê°ì†Œì‹œí‚¤ë©° ëŒ€ê¸°
 					if (pattern_count /= "00000") then
 						pattern_count <= pattern_count - 1;
-					--pattern_count°¡ 0ÀÌ µÉ ½Ã ³­¼ö¸¦ ÀÌ¿ëÇÑ ÀÓÀÇÀÇ ÆĞÅÏ ºÎ¿© (00 Á¦¿Ü)
+					--pattern_countê°€ 0ì´ ë  ì‹œ ë‚œìˆ˜ë¥¼ ì´ìš©í•œ ì„ì˜ì˜ íŒ¨í„´ ë¶€ì—¬ (00 ì œì™¸)
 					else
 						if (random_count (1 downto 0) = "00") then
 							if (random_count (3 downto 2) = "00") then
@@ -615,8 +617,8 @@ begin
 								pattern_count <= "00001";
 						end case;
 					end if;
-				--ÆĞÅÏ 1 : 1ÁÙ È­»ì x 3 -> 2ÁÙ È­»ì x 3 -> 1ÁÙ È­»ì  x 3
-				--      or 2ÁÙ È­»ì x 3 -> 1ÁÙ È­»ì x 3 -> 2ÁÙ È­»ì  x 3
+				--íŒ¨í„´ 1 : 1ì¤„ í™”ì‚´ x 3 -> 2ì¤„ í™”ì‚´ x 3 -> 1ì¤„ í™”ì‚´  x 3
+				--      or 2ì¤„ í™”ì‚´ x 3 -> 1ì¤„ í™”ì‚´ x 3 -> 2ì¤„ í™”ì‚´  x 3
 				elsif (pattern_num = "01") then
 					pattern_count <= pattern_count - 1;
 					if (random_fixed = '0') then
@@ -639,7 +641,7 @@ begin
 								arrow_pixel(13) <= '1';
 							when "00010" =>
 								arrow_pixel(13) <= '1';
-							--Ã¹¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+							--ì²«ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. (0.5ì´ˆ ~ 1.25ì´ˆ) ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
 							when "00000" =>
 								pattern_num <= "00";
 								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
@@ -666,7 +668,7 @@ begin
 								arrow_pixel(29) <= '1';
 							when "00010" =>
 								arrow_pixel(29) <= '1';
-							--Ã¹¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+							--ì²«ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. (0.5ì´ˆ ~ 1.25ì´ˆ) ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
 							when "00000" =>
 								pattern_num <= "00";
 								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
@@ -675,7 +677,7 @@ begin
 						end case;
 					end if;
 
-				--ÆĞÅÏ 2 : »ó´Ü -> 4 ÆĞÅÏÅ¬¶ô¸¶´Ù »ó´Ü -> È­»ì ¹ß»ç/ ÇÏ´Ü -> ÀüÃ¼°ø°İ or »ó´Ü -> 4ÆĞÅÏÅ¬¶ô¸¶´Ù ÀüÃ¼°ø°İ / ÇÏ´Ü -> È­»ì ¹ß»ç 
+				--íŒ¨í„´ 2 : ìƒë‹¨ -> 4 íŒ¨í„´í´ë½ë§ˆë‹¤ ìƒë‹¨ -> í™”ì‚´ ë°œì‚¬/ í•˜ë‹¨ -> ì „ì²´ê³µê²© or ìƒë‹¨ -> 4íŒ¨í„´í´ë½ë§ˆë‹¤ ì „ì²´ê³µê²© / í•˜ë‹¨ -> í™”ì‚´ ë°œì‚¬ 
 				elsif (pattern_num = "10") then
 					pattern_count <= pattern_count - 1;
 					if (random_fixed = '0') then
@@ -728,7 +730,7 @@ begin
 								first_warning(27) <= '1';
 								first_warning(28) <= '1';
 								first_warning(29) <= '1';
-							--µÎ¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+							--ë‘ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. (0.5ì´ˆ ~ 1.25ì´ˆ) ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
 							when "00000" =>
 								pattern_num <= "00";
 								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
@@ -782,7 +784,7 @@ begin
 								first_warning(10) <= '1';
 								first_warning(11) <= '1';
 								first_warning(12) <= '1';
-							--µÎ¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+							--ë‘ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. (0.5ì´ˆ ~ 1.25ì´ˆ) ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
 							when "00000" =>
 								pattern_num <= "00";
 								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
@@ -790,7 +792,7 @@ begin
 								NULL;
 						end case;
 					end if;
-				-- ÆĞÅÏ 3 : 2ÆĞÅÏ Å¬¶ô¸¶´Ù, ¼¼·Î¿­ ÇÑÁÙ °ø°İ ¹× ÀüÁø. 8ÆĞÅÏ Å¬¶ô¸¶´Ù ¹İº¹ÇÏ¿© 5È¸ ÁøÇà
+				-- íŒ¨í„´ 3 : 2íŒ¨í„´ í´ë½ë§ˆë‹¤, ì„¸ë¡œì—´ í•œì¤„ ê³µê²© ë° ì „ì§„. 8íŒ¨í„´ í´ë½ë§ˆë‹¤ ë°˜ë³µí•˜ì—¬ 5íšŒ ì§„í–‰
 				elsif (pattern_num = "11") then
 					pattern_count <= pattern_count - 1;
 					case pattern_count is
@@ -868,7 +870,7 @@ begin
 							first_warning(24) <= '1';
 							first_warning(12) <= '1';	
 							first_warning(28) <= '1';							
-						--¼¼¹øÂ° ÆĞÅÏ Á¾·á. (1ÃÊ ~ 1.5ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+						--ì„¸ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. (1ì´ˆ ~ 1.5ì´ˆ) ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
 						when "00000" =>
 							pattern_num <= "00";
 							pattern_count <= "00100" + ("000" & random_count(1 downto 0));
@@ -876,15 +878,15 @@ begin
 							NULL;
 					end case;
 				end if;
-			--º¸½º 2 Çàµ¿ Á¤ÀÇ
+			--ë³´ìŠ¤ 2 í–‰ë™ ì •ì˜
 			elsif (stage_data = "10") then
 			end if;
 		end if;
 	end process;
 
-	--stage data Àü´Ş
+	--stage data ì „ë‹¬
 	stage <= stage_data;
-	--FPGA clock¸¶´Ù ÀÛµ¿ÇÏ´Â ½Ç½Ã°£ action. ÇÇ°İ ÆÇÁ¤ µî À¯Àú Çàµ¿¿¡ µû¸¥ code´Â ¿©±â ÀÛ¼º ¹Ù¶÷
+	--FPGA clockë§ˆë‹¤ ì‘ë™í•˜ëŠ” ì‹¤ì‹œê°„ action. í”¼ê²© íŒì • ë“± ìœ ì € í–‰ë™ì— ë”°ë¥¸ codeëŠ” ì—¬ê¸° ì‘ì„± ë°”ëŒ
 	process(FPGA_RSTB,clk)
 	begin
 		if(FPGA_RSTB = '0')then
@@ -895,12 +897,12 @@ begin
 			random_count <= "0000000";
 			stage_data  <= "00";
 		elsif(clk'event and clk='1')then
-			-- 7bit ³­¼ö random_count »ı¼º
+			-- 7bit ë‚œìˆ˜ random_count ìƒì„±
 			random_count <= random_count + 1;
 			if (random_count = "1111111") then
 				random_count <= "0000000";
 			end if;
-			--½ÃÀÛ ´ë±â Áß ÀÏ¶§
+			--ì‹œì‘ ëŒ€ê¸° ì¤‘ ì¼ë•Œ
 			if (stage_data = "00") then
 				--   FPGA  SOUL
 				-- PUSH ANY BUTTON
@@ -936,25 +938,26 @@ begin
 				reg_file(29) <= X"54";
 				reg_file(30) <= X"4F";
 				reg_file(31) <= X"4E";
-				--¾î¶² ¹öÆ°ÀÌ¶óµµ ´­¸®¸é : Ã¹ º¸½º ½ÃÀÛ
+				--ì–´ë–¤ ë²„íŠ¼ì´ë¼ë„ ëˆŒë¦¬ë©´ : ì²« ë³´ìŠ¤ ì‹œì‘
 				if ((left_1 = '0') or (left_2 = '0') or (right_1 = '0') or (right_2 = '0') or (updown_1 = '0') or (updown_2 = '0')) then
+					reg_file <= clear_reg; -- Clear LCD Screen
 					stage_data <= "01";
 				end if;
 			else
 				for i in 0 to 31 loop
-					-- º¸½º À§Ä¡/ÇÃ·¹ÀÌ¾î Ã¼·Â Ç¥½Ã À§Ä¡/º¸½º Ã¼·Â Ç¥½Ã À§Ä¡¸¦ Á¦¿ÜÇÑ Àü ÇÈ¼¿¿¡¼­
+					-- ë³´ìŠ¤ ìœ„ì¹˜/í”Œë ˆì´ì–´ ì²´ë ¥ í‘œì‹œ ìœ„ì¹˜/ë³´ìŠ¤ ì²´ë ¥ í‘œì‹œ ìœ„ì¹˜ë¥¼ ì œì™¸í•œ ì „ í”½ì…€ì—ì„œ
 					if ((i /= 13) or (i /= 14) or (i /= 15) or (i /= 30) or (i /= 31)) then
-						-- ÇÇ°İ ÆÇÁ¤ ÃÊ±âÈ­
+						-- í”¼ê²© íŒì • ì´ˆê¸°í™”
 						hit_on(i) <= '0';
-						--±× Ä­¿¡ È­»ìÀÌ ÀÖÀ¸¸é : "<"  & ÇÇ°İÆÇÁ¤ ON
+						--ê·¸ ì¹¸ì— í™”ì‚´ì´ ìˆìœ¼ë©´ : "<"  & í”¼ê²©íŒì • ON
 						if (arrow_pixel(i) = '1') then
 							hit_on(i) <= '1';
 							reg_file(i) <= X"3C";
-						-- È­»ìÀÌ ¾øÀ¸¸é¼­/ÇÈ¼¿ Æø¹ß È¿°ú°¡ ÀÖÀ¸¸é : "±î¸¸ ³×¸ğ" & ÇÇ°İÆÇÁ¤ ON
+						-- í™”ì‚´ì´ ì—†ìœ¼ë©´ì„œ/í”½ì…€ í­ë°œ íš¨ê³¼ê°€ ìˆìœ¼ë©´ : "ê¹Œë§Œ ë„¤ëª¨" & í”¼ê²©íŒì • ON
 						elsif (pixel_explosion(i) = '1') then
 							hit_on(i) <= '1';
 							reg_file(i) <= X"FF";
-						-- È­»ì/ÇÈ¼¿ Æø¹ß È¿°ú°¡ ¾øÀ¸¸é¼­ °æ°í È¿°ú Á¸Àç : "!"
+						-- í™”ì‚´/í”½ì…€ í­ë°œ íš¨ê³¼ê°€ ì—†ìœ¼ë©´ì„œ ê²½ê³  íš¨ê³¼ ì¡´ì¬ : "!"
 						elsif ((first_warning(i) = '1') or (second_warning(i) = '1')) then
 							reg_file(i) <= X"21";
 						end if;
@@ -965,6 +968,26 @@ begin
 		end if;
 	end process;
 
+process(FPGA_RSTB, clk)
+	Begin
+		if FPGA_RSTB ='0' then
+			cnt <= (others => '0');
+			data_out <= '0';
+		elsif clk='1' and clk'event then
+			if w_enable = '1' then
+				data <= reg_file (conv_integer(cnt));
+				addr <= cnt;
+				data_out <= '1';
+				if cnt= X"1F" then
+					cnt <= (others =>'0');
+				else
+					cnt <= cnt + 1;
+				end if;
+			else
+				data_out <= '0';
+			end if;
+		end if;
+end process;
 
 
 end Behavioral;
@@ -977,7 +1000,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity digital_clock is
     Port ( FPGA_RSTB: in  STD_LOGIC;
            CLK : in  STD_LOGIC;
-			  attack_1: in std_logic;--°ø°İÀÌ µé¾î¿À¸é1
+			  attack_1: in std_logic;--ê³µê²©ì´ ë“¤ì–´ì˜¤ë©´1
 			  attack_2: in std_logic;
            DIGIT : out  STD_LOGIC_VECTOR (6 downto 1);
            SEG_A : out  STD_LOGIC;
@@ -991,9 +1014,9 @@ entity digital_clock is
 end digital_clock;
 
 architecture Behavioral of digital_clock is
---³»ºÎ½ÅÈ£
-signal s01_clk:std_logic;--1Hz¿¡ ¸Â´Â clk º¯¼ö
---s01_clk¿¡ ¸Â°Ô countµÇ´Â ½Ã°£ º¯¼ö
+--ë‚´ë¶€ì‹ í˜¸
+signal s01_clk:std_logic;--1Hzì— ë§ëŠ” clk ë³€ìˆ˜
+--s01_clkì— ë§ê²Œ countë˜ëŠ” ì‹œê°„ ë³€ìˆ˜
 signal cool1:std_logic_vector(3 downto 0);
 signal cool2:std_logic_vector(3 downto 0);
 signal min10_cnt,min01_cnt:std_logic_vector(3 downto 0);
@@ -1008,48 +1031,48 @@ begin
 	process(sel)
 	begin
 		case sel is
-		--ºĞÀÇ 10ÀÇÀÚ¸®
+		--ë¶„ì˜ 10ì˜ìë¦¬
 			when "000"=> DIGIT<="000001";
 								data<=min10_cnt;
-		--ºĞÀÇ 1ÀÇ ÀÚ¸®
+		--ë¶„ì˜ 1ì˜ ìë¦¬
 			when "001"=> DIGIT<="000010";
 								data<=min01_cnt;
-		--ÃÊÀÇ 10ÀÇ ÀÚ¸®
+		--ì´ˆì˜ 10ì˜ ìë¦¬
 			when "010"=> DIGIT<="000100";
 								data<=sec10_cnt;
-		--ÃÊÀÇ 1ÀÇ ÀÚ¸®
+		--ì´ˆì˜ 1ì˜ ìë¦¬
 			when "011"=> DIGIT<="001000";
 								data<=sec01_cnt;
-		--cool timeÀÇ ÀÚ¸®(1p)
+		--cool timeì˜ ìë¦¬(1p)
 			when "100"=> DIGIT<="010000";
 								data<=cool1;
-		--cool timeÀÇ ÀÚ¸® (2p)
+		--cool timeì˜ ìë¦¬ (2p)
 			when "101"=> DIGIT<="100000";
 								data<=cool2;
 			when others => null;
 		end case;
 	end process;
 	
-	--ºü¸¥ seg_clk¿¡ µû¶ó digitÀ» ¹Ù²Ù¸é¼­ °á°úµµÃâ, À°¾ÈÀ¸·Ğ ¿¬¼ÓÀ» º¸ÀÓ
+	--ë¹ ë¥¸ seg_clkì— ë”°ë¼ digitì„ ë°”ê¾¸ë©´ì„œ ê²°ê³¼ë„ì¶œ, ìœ¡ì•ˆìœ¼ë¡  ì—°ì†ì„ ë³´ì„
 	process(FPGA_RSTB,clk)
-	--4MHZ>20kHZÀ» À§ÇÑ »õ·Î¿î clk º¯¼ö ¼±¾ğ
+	--4MHZ>20kHZì„ ìœ„í•œ ìƒˆë¡œìš´ clk ë³€ìˆ˜ ì„ ì–¸
 	variable seg_clk_cnt:integer range 0 to 200;
 	begin
 		if(FPGA_RSTB='0')then
 			sel<="000";
 			seg_clk_cnt:=0;
 		elsif(clk'event and clk='1')then
-		--200ÀÌ µÇ¸é 0À¸·Î ´Ù½Ã ÃÊ±âÈ­
+		--200ì´ ë˜ë©´ 0ìœ¼ë¡œ ë‹¤ì‹œ ì´ˆê¸°í™”
 			if(seg_clk_cnt=200)then
 				seg_clk_cnt:=0;
-				--200ÀÌ ¾Æ´Ï¸é ½Ã>ºĞ>ÃÊ ·Î ÀÚ¸® ¿Å±è
+				--200ì´ ì•„ë‹ˆë©´ ì‹œ>ë¶„>ì´ˆ ë¡œ ìë¦¬ ì˜®ê¹€
 				if(sel="101")then
 					sel<="000";
 				else
 					sel<= sel+1;
 				end if;
 			else
-			--200ÀÌ ¾Æ´Ï¸é clk º¯¼ö +1
+			--200ì´ ì•„ë‹ˆë©´ clk ë³€ìˆ˜ +1
 				seg_clk_cnt:=seg_clk_cnt+1;
 			end if;
 		end if;
@@ -1057,7 +1080,7 @@ begin
 	
 	process(data)
 	begin
-	--segment display¸¦ À§ÇÑ array ¼³Á¤
+	--segment displayë¥¼ ìœ„í•œ array ì„¤ì •
 		case data is
 			when "0000"=>seg<="00111111";--data displayed:0
 			when "0001"=>seg<="00000110";--data displayed:1
@@ -1087,28 +1110,28 @@ begin
 	SEG_G<=seg(6);
 	SEG_DP<=seg(7);
 	
-	--1HZÀÇ clock(s01_clk)±¸Çö, 1ÃÊ¿¡ ÇØ´ç
+	--1HZì˜ clock(s01_clk)êµ¬í˜„, 1ì´ˆì— í•´ë‹¹
 	process(FPGA_RSTB,clk)
-	--1HZ¸¦ ±¸ÇöÇÏ±âÀ§ÇÑ clk º¯¼ö count_clk ¼±¾ğ
+	--1HZë¥¼ êµ¬í˜„í•˜ê¸°ìœ„í•œ clk ë³€ìˆ˜ count_clk ì„ ì–¸
 	variable count_clk:integer range 0 to 2000000;
 	begin
 		if(FPGA_RSTB='0')then
 			s01_clk<='1';
 			count_clk:=0;
 		elsif(clk'event and clk='1')then
-		--0.5ÃÊ ÁÖ±âÀÇ clkÀ¸·Î clk °ª º¯È­, 2000000 ¼¼°í 0>1,1>0À¸·Î ¹Ù²Ş
+		--0.5ì´ˆ ì£¼ê¸°ì˜ clkìœ¼ë¡œ clk ê°’ ë³€í™”, 2000000 ì„¸ê³  0>1,1>0ìœ¼ë¡œ ë°”ê¿ˆ
 			if(count_clk=2000000)then
 				count_clk:=0;
 				s01_clk<=not s01_clk;
 			else
-			--2000000À» ¾È¼¼¸é 1¾¿ ¿Ã¸²
+			--2000000ì„ ì•ˆì„¸ë©´ 1ì”© ì˜¬ë¦¼
 				count_clk:=count_clk+1;
 				s01_clk<=s01_clk;
 			end if;
 		end if;
 	end process;
 	
-	process(s01_clk,FPGA_RSTB,attack_1)--°ø°İÇßÀ»¶§ ÄğÅ¸ÀÓ
+	process(s01_clk,FPGA_RSTB,attack_1)--ê³µê²©í–ˆì„ë•Œ ì¿¨íƒ€ì„
 	begin
 		if (FPGA_RSTB='0')then
 			cool_cnt1<="0011";
@@ -1124,7 +1147,7 @@ begin
 	cool1<=cool_cnt1;
 	end process;
 		
-	process(s01_clk,FPGA_RSTB,attack_2)--°ø°İÇßÀ»¶§ ÄğÅ¸ÀÓ
+	process(s01_clk,FPGA_RSTB,attack_2)--ê³µê²©í–ˆì„ë•Œ ì¿¨íƒ€ì„
 	begin
 		if (FPGA_RSTB='0')then
 			cool_cnt2<="0011";
@@ -1145,38 +1168,38 @@ begin
 	variable s10_cnt,s01_cnt:std_logic_vector(3 downto 0);
 	begin
 		if(FPGA_RSTB='0')then
-			--LED¿¡ 00:00:00Ç¥½Ã
+			--LEDì— 00:00:00í‘œì‹œ
 			m10_cnt:="0000";
 			m01_cnt:="0000";
 			s10_cnt:="0000";
 			s01_cnt:="0000";
 		elsif(s01_clk='1' and s01_clk'event)then
-		--1Hz clockÀÌ risingÀÌ¸é 1ÃÊ Áõ°¡
+		--1Hz clockì´ risingì´ë©´ 1ì´ˆ ì¦ê°€
 		s01_cnt:=s01_cnt+1;
 			if(s01_cnt>"1001")then
-			--ÃÊÀÇ 1ÀÇÀÚ¸®¼ö°¡10ÀÌµÇ¸é ÃÊÀÇ10ÀÇÀÚ¸®¼ö Áõ°¡
+			--ì´ˆì˜ 1ì˜ìë¦¬ìˆ˜ê°€10ì´ë˜ë©´ ì´ˆì˜10ì˜ìë¦¬ìˆ˜ ì¦ê°€
 				s01_cnt:="0000";
 				s10_cnt:=s10_cnt+1;
 			end if;
 			if(s10_cnt>"0101")then
-			--ÃÊÀÇ 10ÀÇÀÚ¸®¼ö°¡6ÀÌµÇ¸é ºĞÀÇ1ÀÇ ÀÚ¸®¼ö Áõ°¡
+			--ì´ˆì˜ 10ì˜ìë¦¬ìˆ˜ê°€6ì´ë˜ë©´ ë¶„ì˜1ì˜ ìë¦¬ìˆ˜ ì¦ê°€
 				s10_cnt:="0000";
 				m01_cnt:=m01_cnt+1;
 			end if;
 			if(m01_cnt>"1001")then
-			--ºĞÀÇ 1ÀÇÀÚ¸®¼ö°¡10ÀÌµÇ¸é ºĞÀÇ10ÀÇ ÀÚ¸®¼ö Áõ°¡
+			--ë¶„ì˜ 1ì˜ìë¦¬ìˆ˜ê°€10ì´ë˜ë©´ ë¶„ì˜10ì˜ ìë¦¬ìˆ˜ ì¦ê°€
 				m01_cnt:="0000";
 				m10_cnt:=m10_cnt+1;
 			end if;
 			if(m10_cnt>"0101")then
-			--ºĞÀÇ 10ÀÇÀÚ¸®¼ö°¡6ÀÌµÇ¸é ½Ã°£ÀÇ1ÀÇ ÀÚ¸®¼ö Áõ°¡
+			--ë¶„ì˜ 10ì˜ìë¦¬ìˆ˜ê°€6ì´ë˜ë©´ ì‹œê°„ì˜1ì˜ ìë¦¬ìˆ˜ ì¦ê°€
 				m10_cnt:="0000";
 				m01_cnt:="0000";
 				s10_cnt:="0000";
 				s01_cnt:="0000";
 			end if;
 		end if;
-	--°è»êµÈ ½Ã°£°ªÀ» ¸ÅÄª
+	--ê³„ì‚°ëœ ì‹œê°„ê°’ì„ ë§¤ì¹­
 	sec01_cnt<=s01_cnt;
 	sec10_cnt<=s10_cnt;
 	min01_cnt<=m01_cnt;
