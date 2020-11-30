@@ -878,8 +878,154 @@ begin
 							NULL;
 					end case;
 				end if;
+-------------------------- stage 2 ----------------------------------
 			--보스 2 행동 정의
 			elsif (stage_data = "10") then
+				if (pattern_num = "00") then
+					--pattern_count가 0이 될 때 까지 1씩 감소시키며 대기
+					if (pattern_count /= "00000") then
+						pattern_count <= pattern_count - 1;
+					--pattern_count가 0이 될 시 난수를 이용한 임의의 패턴 부여 (00 제외)
+					else
+						if (random_count (1 downto 0) = "00") then
+							if (random_count (3 downto 2) = "00") then
+								if (random_count (5 downto 4) = "00") then
+									pattern_select := "01";
+								else
+									pattern_select := random_count (5 downto 4);
+								end if;
+							else
+								pattern_select := random_count (3 downto 2);
+							end if;
+						else
+							pattern_select := random_count (1 downto 0);
+						end if;
+						random_fixed := random_count(0);
+						case pattern_select is
+							when "01" =>
+								pattern_num <= "01";
+								pattern_count <= "10011";
+							when "10" =>
+								pattern_num <= "10";
+								pattern_count <= "11001";
+							when "11" =>
+								pattern_num <= "11";
+								pattern_count <= "11111";
+							when others =>
+								pattern_num <= "00";
+								pattern_count <= "00001";
+						end case;
+					end if;
+				--패턴 1-1 : |x|_|x|_|x|_|x|_|x|_|x|_|x|B|HP|HP|
+				--			|_|x|_|x|_|x|_|x|_|x|_|x|_|x|HP|HP|
+				elsif (pattern_num = "01") then
+					pattern_count <= pattern_count - 1;
+					if (random_fixed = '0') then
+						case pattern_count is
+							when "00100" | "00011"  =>
+								first_warning(0) <= '1';
+								first_warning(2) <= '1';
+								first_warning(4) <= '1';
+								first_warning(6) <= '1';
+								first_warning(8) <= '1';
+								first_warning(10) <= '1';
+								first_warning(12) <= '1';
+								first_warning(17) <= '1';
+								first_warning(19) <= '1';
+								first_warning(21) <= '1';
+								first_warning(23) <= '1';
+								first_warning(25) <= '1';
+								first_warning(27) <= '1';
+								first_warning(29) <= '1';
+							-- Delay of 1s ~ 1.75s
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+						
+				--패턴 1-2 : |_|x|_|x|_|x|_|x|_|x|_|x|_|B|HP|HP|
+				--			  |x|_|x|_|x|_|x|_|x|_|x|_|x|_|HP|HP|
+					else
+						case pattern_count is
+							when "11000" | "10000"  =>
+								first_warning(1) <= '1';
+								first_warning(3) <= '1';
+								first_warning(5) <= '1';
+								first_warning(7) <= '1';
+								first_warning(9) <= '1';
+								first_warning(11) <= '1';
+								first_warning(13) <= '1';
+								first_warning(16) <= '1';
+								first_warning(18) <= '1';
+								first_warning(20) <= '1';
+								first_warning(22) <= '1';
+								first_warning(24) <= '1';
+								first_warning(26) <= '1';
+								first_warning(28) <= '1';
+							-- Delay of 1s ~ 1.75s
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+					end if;
+					
+				-- 패턴 2 sine wave        |_|_|x|_|_|_|x|_|_|_|x|_|<|B|HP|HP|
+				-- with arrow top/bot    |x|_|_|_|x|_|_|_|x|_|_|_|x|<|HP|HP|
+				elsif (pattern_num = "10") then
+					pattern_count <= pattern_count - 1;
+					case pattern_count is
+						when "11110" =>
+							arrow_pixel(12) <= '1';
+							first_warning(2) <= '1';
+							first_warning(6) <= '1';
+							first_warning(10) <= '1';
+							first_warning(16) <= '1';
+							first_warning(20) <= '1';
+							first_warning(24) <= '1';
+							first_warning(28) <= '1';
+						when "11001" =>
+							arrow_pixel(29) <= '1';
+							first_warning(2) <= '1';
+							first_warning(6) <= '1';
+							first_warning(10) <= '1';
+							first_warning(16) <= '1';
+							first_warning(20) <= '1';
+							first_warning(24) <= '1';
+							first_warning(28) <= '1';
+						when "11101" | "11100" | "11011" | "11010" |
+							  "11000" | "10111" | "10110" | "10101" =>
+							first_warning(2) <= '1';
+							first_warning(6) <= '1';
+							first_warning(10) <= '1';
+							first_warning(16) <= '1';
+							first_warning(20) <= '1';
+							first_warning(24) <= '1';
+							first_warning(28) <= '1';
+							
+						-- Delay of 1s ~ 1.75s
+						when "00000" =>
+							pattern_num <= "00";
+							pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+						when others =>
+							NULL;
+					end case;
+					
+				-- **** needs to add one last pattern
+				elsif (pattern_num = "10") then
+					pattern_count <= pattern_count - 1;
+					case pattern_count is
+						when others =>
+							NULL;
+					end case;
+				end if;
+--------------- STAGE 3 ----------------------------
+			-- boss 3
+			elsif (stage_data = "11") then
+				NULL;
 			end if;
 		end if;
 	end process;
