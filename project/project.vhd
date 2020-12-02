@@ -37,8 +37,6 @@ architecture Behavioral of project is
 			addr : in std_logic_vector(4 downto 0);
 			data : in std_logic_vector(7 downto 0);
 			w_enable : out std_logic;
-			attack_1: in std_logic;
-			attack_2: in std_logic;
 			stage: in std_logic_vector(1 downto 0));
 	End component;
 
@@ -57,7 +55,9 @@ architecture Behavioral of project is
 			updown_2 : in std_logic;
 			attack_1: out std_logic;
 			attack_2: out std_logic;
-			stage: out std_logic_vector(1 downto 0));
+			stage: out std_logic_vector(1 downto 0);
+			reattack_1 : in std_logic;
+			reattack_2 : in std_logic);
 	end component;
 	
 	component digital_clock
@@ -73,22 +73,25 @@ architecture Behavioral of project is
            SEG_E : out  STD_LOGIC;
            SEG_F : out  STD_LOGIC;
            SEG_G : out  STD_LOGIC;
-           SEG_DP : out  STD_LOGIC);
+           SEG_DP : out  STD_LOGIC;
+		   reattack_1 : inout std_logic;
+			reattack_2 : inout std_logic);
 	end component;
 -- 내부신호 정의	
 signal data_out_reg, w_enable_reg : std_logic; 
 signal addr_reg : std_logic_vector(4 downto 0); 
 signal data_reg : std_logic_vector(7 downto 0);
 signal stage : std_logic_vector(1 downto 0);
+signal reattack_1 , reattack_2 : std_logic;
 signal attack_1 , attack_2 : std_logic;
 
 	Begin
 		lcd : LCD_test port map(FPGA_RSTB, CLK, LCD_A, LCD_EN, LCD_D,
-				data_out_reg, addr_reg, data_reg, w_enable_reg,attack_1,attack_2,stage);
+				data_out_reg, addr_reg, data_reg, w_enable_reg,stage);
 		data : data_gen port map(FPGA_RSTB, CLK, w_enable_reg, data_out_reg,
-				addr_reg, data_reg,left_1,right_1,updown_1,left_2,right_2,updown_2,attack_1,attack_2,stage);
+				addr_reg, data_reg,left_1,right_1,updown_1,left_2,right_2,updown_2,attack_1,attack_2,stage,reattack_1,reattack_2);
 		clock : digital_clock port map(FPGA_RSTB,CLK,attack_1,attack_2,DIGIT,SEG_A,SEG_B,SEG_C,
-				SEG_D,SEG_E,SEG_F,SEG_G,SEG_DP);
+				SEG_D,SEG_E,SEG_F,SEG_G,SEG_DP,reattack_1,reattack_2);
 end Behavioral;
 
 library IEEE; --LED 설정 및 초기화 부분
@@ -488,7 +491,9 @@ entity data_gen is
 			updown_2 : in std_logic;
 			attack_1: out std_logic;
 			attack_2: out std_logic;
-		   stage: out std_logic_vector(1 downto 0));
+		   stage: out std_logic_vector(1 downto 0);
+		   reattack_1 : in std_logic;
+			reattack_2 : in std_logic);
 end data_gen;
 architecture Behavioral of data_gen is
 --내부신호 정의
@@ -518,8 +523,10 @@ architecture Behavioral of data_gen is
 	signal p2_curSt : integer range 31 downto 0;
 	signal p1_preSt : integer range 31 downto 0;
 	signal p2_preSt : integer range 31 downto 0;
-	signal action : std_logic_vector;
-	signal special : std_logic_vector;
+	signal action : std_logic;
+	signal special : std_logic;
+	
+	signal game_over : std_logic;
 
 	
 begin
@@ -570,13 +577,28 @@ begin
 			elsif (right_1 = '0') then
 				--이동범위 넘어가면 이동 안함
 				if( p1_curSt = 12 or p1_curSt = 29) then
-					p1_cusSt <= p1_curSt;
+					p1_curSt <= p1_curSt;
 					p1_preSt <= p1_preSt;
 				else
 					p1_preSt <= p1_curSt;
 					p1_curSt <= p1_curSt + 1;
 				end if;	
+			--player1 위아래 이동 (줄바꿈)
+			elsif (updown_1 = '0') then
+				if( p1_curSt = 29) then
+					p1_curSt <= p1_curSt;
+					p1_preSt <= p1_preSt;
+				else
+					if(p1_curSt >= 0 and p1_curSt <= 12) then
+						p1_preSt <= p1_curSt;
+						p1_curSt <= p1_curSt + 16;
+					elsif(p1_curSt >= 16 and p1_curSt <= 28) then
+						p1_preSt <= p1_curSt;
+						p1_curSt <= p1_curSt - 16;
+					end if;
+				end if;
 			end if;
+			
 			--player2 왼쪽 이동
 			if (left_2 = '0') then
 				--이동범위 넘어가면 이동 안함
@@ -591,13 +613,29 @@ begin
 			elsif (right_2 = '0') then
 				--이동범위 넘어가면 이동 안함
 				if( p2_curSt = 12 or p2_curSt = 29) then
-					p2_cusSt <= p2_curSt;
+					p2_curSt <= p2_curSt;
 					p2_preSt <= p2_preSt;
 				else
 					p2_preSt <= p2_curSt;
 					p2_curSt <= p2_curSt + 1;
 				end if;	 
+			
+			--player2 위아래 이동 (줄바꿈)
+			elsif (updown_2 = '0') then
+				if( p2_curSt = 29) then
+					p2_curSt <= p2_curSt;
+					p2_preSt <= p2_preSt;
+				else
+					if(p2_curSt >= 0 and p2_curSt <= 12) then
+						p2_preSt <= p2_curSt;
+						p2_curSt <= p2_curSt + 16;
+					elsif(p2_curSt >= 16 and p2_curSt <= 28) then
+						p2_preSt <= p2_curSt;
+						p2_curSt <= p2_curSt - 16;
+					end if;
+				end if;
 			end if;
+			
 			--player1 위치와 player2 위치가 겹칠 경우
 			if (p1_curSt = p2_curSt) then
 				reg_file(p1_curSt) <= X"02";
@@ -635,23 +673,35 @@ begin
 		elsif (clk = '1' and clk'event and action = '1') then
 			--둘이 합쳐서 공격할 때 유효한 경우
 			if (special = '1') then
-				if (attack_1 = '0' or attack_2 = '0') then
+				if (right_1 = '0' or right_2 = '0') then
 					Mhp <= Mhp - 1;
 				end if;
 			--나머지 경우 공격
 			else
-				if (p1_curSt = 12 or p1_curSt = 29) then
-					if (attack_1 = '0') then
-						Mhp <= Mhp - 1;
+				if (reattack_1 = '1') then
+					if (p1_curSt = 12) then
+						if (right_1 = '0') then
+							Mhp <= Mhp - 1;
+						end if;
+					elsif (p1_curSt = 29) then
+						if (updown_1 = '0') then
+							Mhp <= Mhp - 1;
+						end if;
 					end if;
-				end if;
-				
-				if (p2_curSt = 12 or p2_curSt = 29) then
-					if (attack_2 = '0') then
-						Mhp <= Mhp - 1;
+				elsif (reattack_2 = '1') then
+					if (p2_curSt = 12) then
+						if (right_2 = '0') then
+							Mhp <= Mhp - 1;
+						end if;
+					elsif (p2_curSt = 29) then
+						if (updown_2 = '0') then
+							Mhp <= Mhp - 1;
+						end if;
 					end if;
 				end if;
 			end if;
+			
+			
 			
 		end if;
 	end process;
@@ -1166,6 +1216,7 @@ begin
 			end loop;
 			random_count <= "0000000";
 			stage_data  <= "00";
+			game_over <= '0';
 		elsif(clk'event and clk='1')then
 			-- 7bit 난수 random_count 생성
 			random_count <= random_count + 1;
@@ -1220,29 +1271,36 @@ begin
 					if ((i /= 13) or (i /= 14) or (i /= 15) or (i /= 30) or (i /= 31)) then
 						-- 피격 판정 초기화
 						hit_on(i) <= '0';
+						
 						--그 칸에 화살이 있으면 : "<"  & 피격판정 ON
 						if (arrow_pixel(i) = '1') then
 							hit_on(i) <= '1';
 							reg_file(i) <= X"3C";
-							if (i = p1_curSt or i = p2_curSt) then
-								Uhp <= Uhp - 1;
-							end if;
 						-- 화살이 없으면서/픽셀 폭발 효과가 있으면 : "까만 네모" & 피격판정 ON
 						elsif (pixel_explosion(i) = '1') then
 							hit_on(i) <= '1';
 							reg_file(i) <= X"FF";
-							if (i = p1_curSt or i = p2_curSt) then
-								Uhp <= Uhp - 1;
-							end if;
 						-- 화살/픽셀 폭발 효과가 없으면서 경고 효과 존재 : "!"
 						elsif ((first_warning(i) = '1') or (second_warning(i) = '1')) then
 							reg_file(i) <= X"21";
 						end if;
 					else
 					end if;
+					
 				end loop;
 			end if;
+			
+			--player가 공격을 맞았을 때
+			if (hit_on(p1_curSt) = '1') or (hit_on(p2_curSt) = '1') then
+				if (Uhp = 0) then
+					game_over <= '1';
+				else
+					Uhp <= Uhp - 1;
+				end if;
+			end if;
+			
 		end if;
+		
 	end process;
 
 process(FPGA_RSTB, clk)
@@ -1287,7 +1345,9 @@ entity digital_clock is
            SEG_E : out  STD_LOGIC;
            SEG_F : out  STD_LOGIC;
            SEG_G : out  STD_LOGIC;
-           SEG_DP : out  STD_LOGIC);
+           SEG_DP : out  STD_LOGIC;
+		   reattack_1 : inout std_logic;
+			reattack_2 : inout std_logic);
 end digital_clock;
 
 architecture Behavioral of digital_clock is
@@ -1412,12 +1472,13 @@ begin
 	begin
 		if (FPGA_RSTB='0')then
 			cool_cnt1<="0011";
-		elsif(attack_1='0' and cool_cnt2 = "0000")then
+		elsif(attack_1='0' and cool_cnt2 = "0000" and reattack_1 = '0')then
 			cool_cnt1<="0011";
+			reattack_1 <= '1';
 		elsif(s01_clk = '1' and s01_clk'event)then
 			if (cool_cnt1 > "0000")then
 				cool_cnt1<=cool_cnt1-1;
-			else cool_cnt1 <= "0000";
+			else cool_cnt1 <= "0000"; reattack_1<='0';
 			end if;
 		end if;
 		
@@ -1428,12 +1489,13 @@ begin
 	begin
 		if (FPGA_RSTB='0')then
 			cool_cnt2<="0011";
-		elsif(attack_2='0' and cool_cnt2 = "0000")then
+		elsif(attack_2='0' and cool_cnt2 = "0000" and reattack_2 = '0')then
 			cool_cnt2<="0011";
+			reattack_2<='1';
 		elsif(s01_clk = '1' and s01_clk'event)then
 			if (cool_cnt2 > "0000")then
 				cool_cnt2<=cool_cnt2-1;
-			else cool_cnt2 <= "0000";
+			else cool_cnt2 <= "0000";reattack_2<='0';
 			end if;
 		end if;
 		
