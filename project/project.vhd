@@ -511,6 +511,16 @@ architecture Behavioral of data_gen is
 	signal pixel_explosion : pixel_data;
 	signal hit_on : pixel_data;
 
+	signal Mhp : integer range 100 downto 0;
+	signal Uhp : integer range 2 downto 0;
+	
+	signal p1_curSt : integer range 31 downto 0;
+	signal p2_curSt : integer range 31 downto 0;
+	signal p1_preSt : integer range 31 downto 0;
+	signal p2_preSt : integer range 31 downto 0;
+	signal action : std_logic_vector;
+	signal special : std_logic_vector;
+
 	
 begin
 	--4HZ의 patern_clock구현, 0.25초에 해당
@@ -532,6 +542,120 @@ begin
 			end if;
 		end if;
 	end process;	
+
+	--game 내 player 이동 설정
+	process(FPGA_RSTB, clk)
+	begin
+		-- 초기화
+		if(FPGA_RSTB = '0') then	
+			p1_curSt <= 0;
+			p2_curSt <= 16;
+			p1_preSt <= 1;
+			p2_preSt <= 17;
+			action <= '0';
+			special <= '0';
+		--player 이동 설정
+		elsif(clk'event and clk = '1' and action = '1') then
+			--player1 왼쪽 이동
+			if (left_1 = '0') then
+				--이동범위 넘어가면 이동 안함
+				if( p1_curSt = 1 or p1_curSt = 16 ) then
+					p1_curSt <= p1_curSt;
+					p1_preSt <= p1_preSt;
+				else 
+					p1_preSt <= p1_curSt;
+					p1_curSt <= p1_curSt - 1;
+				end if;
+			--player1 오른쪽 이동
+			elsif (right_1 = '0') then
+				--이동범위 넘어가면 이동 안함
+				if( p1_curSt = 12 or p1_curSt = 29) then
+					p1_cusSt <= p1_curSt;
+					p1_preSt <= p1_preSt;
+				else
+					p1_preSt <= p1_curSt;
+					p1_curSt <= p1_curSt + 1;
+				end if;	
+			end if;
+			--player2 왼쪽 이동
+			if (left_2 = '0') then
+				--이동범위 넘어가면 이동 안함
+				if( p2_curSt = 1 or p2_curSt = 16 ) then
+					p2_curSt <= p2_curSt;
+					p2_preSt <= p2_preSt;
+				else 
+					p2_preSt <= p2_curSt;
+					p2_curSt <= p2_curSt - 1;
+				end if;
+			--player2 오른쪽 이동
+			elsif (right_2 = '0') then
+				--이동범위 넘어가면 이동 안함
+				if( p2_curSt = 12 or p2_curSt = 29) then
+					p2_cusSt <= p2_curSt;
+					p2_preSt <= p2_preSt;
+				else
+					p2_preSt <= p2_curSt;
+					p2_curSt <= p2_curSt + 1;
+				end if;	 
+			end if;
+			--player1 위치와 player2 위치가 겹칠 경우
+			if (p1_curSt = p2_curSt) then
+				reg_file(p1_curSt) <= X"02";
+				if (p1_curSt >= 10 and p1_curSt < 13) or (p1_curSt >= 26 and p1_curSt <= 29) then
+					special <= '1';
+				else
+					special <= '0';
+				end if;
+			--player1 이전 위치보다 player2 현재 위치가 더 우위
+			elsif (p2_curSt = p1_preSt) then
+				special <= '0';
+				reg_file(p2_curSt) <= X"01";
+			--player2 이전 위치보다 player1 현재 위치가 더 우위
+			elsif (p1_curSt = p2_preSt) then
+				reg_file(p1_curSt) <= X"00";
+				special <= '0';
+			--player 위치 이동
+			else
+				special <= '0';
+				reg_file(p1_curSt) <= X"00";
+				reg_file(p2_curSt) <= X"01";
+				reg_file(p1_preSt) <= X"20";
+				reg_file(p2_preSt) <= X"20";
+			end if;
+		end if;
+	end process;		
+	
+	
+	--player 공격 및 피격
+	process(FPGA_RSTB, clk)
+	begin
+		--초기화 시 player hp 2로 초기화
+		if(FPGA_RSTB = '0') then
+			Uhp <= 2;
+		elsif (clk = '1' and clk'event and action = '1') then
+			--둘이 합쳐서 공격할 때 유효한 경우
+			if (special = '1') then
+				if (attack_1 = '0' or attack_2 = '0') then
+					Mhp <= Mhp - 1;
+				end if;
+			--나머지 경우 공격
+			else
+				if (p1_curSt = 12 or p1_curSt = 29) then
+					if (attack_1 = '0') then
+						Mhp <= Mhp - 1;
+					end if;
+				end if;
+				
+				if (p2_curSt = 12 or p2_curSt = 29) then
+					if (attack_2 = '0') then
+						Mhp <= Mhp - 1;
+					end if;
+				end if;
+			end if;
+			
+		end if;
+	end process;
+
 
 	--매 pattern clock(0.25초)마다 action을 정의
 	process(FPGA_RSTB,patern_clk)
@@ -1088,6 +1212,7 @@ begin
 				if ((left_1 = '0') or (left_2 = '0') or (right_1 = '0') or (right_2 = '0') or (updown_1 = '0') or (updown_2 = '0')) then
 					reg_file <= clear_reg; -- Clear LCD Screen
 					stage_data <= "01";
+					action <= '1';
 				end if;
 			else
 				for i in 0 to 31 loop
@@ -1099,10 +1224,16 @@ begin
 						if (arrow_pixel(i) = '1') then
 							hit_on(i) <= '1';
 							reg_file(i) <= X"3C";
+							if (i = p1_curSt or i = p2_curSt) then
+								Uhp <= Uhp - 1;
+							end if;
 						-- 화살이 없으면서/픽셀 폭발 효과가 있으면 : "까만 네모" & 피격판정 ON
 						elsif (pixel_explosion(i) = '1') then
 							hit_on(i) <= '1';
 							reg_file(i) <= X"FF";
+							if (i = p1_curSt or i = p2_curSt) then
+								Uhp <= Uhp - 1;
+							end if;
 						-- 화살/픽셀 폭발 효과가 없으면서 경고 효과 존재 : "!"
 						elsif ((first_warning(i) = '1') or (second_warning(i) = '1')) then
 							reg_file(i) <= X"21";
