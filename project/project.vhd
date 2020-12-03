@@ -559,7 +559,6 @@ begin
 			p2_curSt <= 16;
 			p1_preSt <= 1;
 			p2_preSt <= 17;
-			action <= '0';
 			special <= '0';
 		--player 이동 설정
 		elsif(clk'event and clk = '1' and action = '1') then
@@ -701,7 +700,14 @@ begin
 				end if;
 			end if;
 			
-			
+			--player가 공격을 맞았을 때
+			if (hit_on(p1_curSt) = '1') or (hit_on(p2_curSt) = '1') then
+				if (Uhp = 0) then
+					game_over <= '1';
+				else
+					Uhp <= Uhp - 1;
+				end if;
+			end if;
 			
 		end if;
 	end process;
@@ -1217,6 +1223,7 @@ begin
 			random_count <= "0000000";
 			stage_data  <= "00";
 			game_over <= '0';
+			action <= '0';
 		elsif(clk'event and clk='1')then
 			-- 7bit 난수 random_count 생성
 			random_count <= random_count + 1;
@@ -1290,14 +1297,7 @@ begin
 				end loop;
 			end if;
 			
-			--player가 공격을 맞았을 때
-			if (hit_on(p1_curSt) = '1') or (hit_on(p2_curSt) = '1') then
-				if (Uhp = 0) then
-					game_over <= '1';
-				else
-					Uhp <= Uhp - 1;
-				end if;
-			end if;
+			
 			
 		end if;
 		
