@@ -635,30 +635,6 @@ begin
 				end if;
 			end if;
 			
-			--player1 위치와 player2 위치가 겹칠 경우
-			if (p1_curSt = p2_curSt) then
-				reg_file(p1_curSt) <= X"02";
-				if (p1_curSt >= 10 and p1_curSt < 13) or (p1_curSt >= 26 and p1_curSt <= 29) then
-					special <= '1';
-				else
-					special <= '0';
-				end if;
-			--player1 이전 위치보다 player2 현재 위치가 더 우위
-			elsif (p2_curSt = p1_preSt) then
-				special <= '0';
-				reg_file(p2_curSt) <= X"01";
-			--player2 이전 위치보다 player1 현재 위치가 더 우위
-			elsif (p1_curSt = p2_preSt) then
-				reg_file(p1_curSt) <= X"00";
-				special <= '0';
-			--player 위치 이동
-			else
-				special <= '0';
-				reg_file(p1_curSt) <= X"00";
-				reg_file(p2_curSt) <= X"01";
-				reg_file(p1_preSt) <= X"20";
-				reg_file(p2_preSt) <= X"20";
-			end if;
 		end if;
 	end process;		
 	
@@ -1295,6 +1271,31 @@ begin
 					end if;
 					
 				end loop;
+				
+					--player1 위치와 player2 위치가 겹칠 경우
+				if (p1_curSt = p2_curSt) then
+					reg_file(p1_curSt) <= X"02";
+					if (p1_curSt >= 10 and p1_curSt < 13) or (p1_curSt >= 26 and p1_curSt <= 29) then
+						special <= '1';
+					else
+						special <= '0';
+					end if;
+				--player1 이전 위치보다 player2 현재 위치가 더 우위
+				elsif (p2_curSt = p1_preSt) then
+					special <= '0';
+					reg_file(p2_curSt) <= X"01";
+				--player2 이전 위치보다 player1 현재 위치가 더 우위
+				elsif (p1_curSt = p2_preSt) then
+					reg_file(p1_curSt) <= X"00";
+					special <= '0';
+				--player 위치 이동
+				else
+					special <= '0';
+					reg_file(p1_curSt) <= X"00";
+					reg_file(p2_curSt) <= X"01";
+					reg_file(p1_preSt) <= X"20";
+					reg_file(p2_preSt) <= X"20";
+				end if;
 			end if;
 			
 			
