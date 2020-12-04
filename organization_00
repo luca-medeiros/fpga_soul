@@ -540,7 +540,7 @@ end data_gen;
 architecture Behavioral of data_gen is
 --대좏샇 뺤쓽
    signal patern_clk : std_logic;
-   signal random_count : std_logic_vector (6 downto 0);
+   signal random_count : std_logic_vector (3 downto 0);
    signal stage_data : std_logic_vector (1 downto 0);
    signal stage_data_saved : std_logic_vector (1 downto 0);
    signal pattern_num : std_logic_vector (1 downto 0);
@@ -599,12 +599,36 @@ begin
          end if;
       end if;
    end process;   
+	
+	process(FPGA_RSTB,clk)
+   --4HZ瑜援ы쁽섍린꾪븳 clk 蹂 count_clk 좎뼵
+      variable random_cnt : integer range 0 to 7;
+   begin
+      if(FPGA_RSTB = '0')then
+         random_count <= "1111";
+         random_cnt := 0;
+      elsif(clk'event and clk='1')then
+      --0.125珥二쇨린濡clk 媛蹂  500000 멸퀬 0>1,1>0쇰줈 諛붽퓞
+         if(random_cnt = 7)then
+            random_cnt := 0;
+				if (random_count = "1111") then
+					random_count <= random_count + 1;
+				else
+					random_count <= "0000";
+				end if;
+         else
+         --500000蹂대떎 묒쑝硫1利앷
+            random_cnt := random_cnt +1;
+         end if;
+      end if;
+   end process;   
+
 
 
    --留pattern clock(0.25珥留덈떎 action뺤쓽
    process(FPGA_RSTB,patern_clk)
       variable pattern_select : std_logic_vector (1 downto 0);
-		variable pattern_previous : std_logic;
+		variable pattern_previous : std_logic_vector (1 downto 0);
       variable random_fixed : std_logic;
    begin
       if(FPGA_RSTB = '0')then
@@ -617,15 +641,11 @@ begin
          pattern_num <= "00";
          pattern_count <= "00000";
          stage_data_saved <= "00";
-			random_count <= "0000000";
-			pattern_previous := '0';
+			pattern_previous := "00";
 			pattern_select := "00";
 
       elsif(patern_clk'event and patern_clk='1')then
-         if (random_count = "1111111") then
-            random_count <= "0000000";
-         end if;
-			random_count <= random_count + 1;
+			
          if (stage_data_saved /= stage_data) then
             --蹂댁뒪 蹂 寃쎈맖 ->  湲고뙣媛뺤젣 꾪솚 諛1.75珥~ 2.5珥 湲
             pattern_num <= "00";
@@ -678,19 +698,25 @@ begin
                      pattern_select := random_count (1 downto 0);
                   end if;
                   random_fixed := random_count(0);
+						if (pattern_select = pattern_previous) then
+							if (pattern_select = "11") then
+								pattern_select := "01";
+							end if;
+							pattern_select := pattern_select + 1;
+						end if;
                   case pattern_select is
                      when "01" =>
                         pattern_num <= "01";
                         pattern_count <= "10011";
-								pattern_previous <= not pattern_previous;
+								pattern_previous := "01";
                      when "10" =>
                         pattern_num <= "10";
                         pattern_count <= "11001";
-								pattern_previous <= not pattern_previous;
+								pattern_previous := "10";
                      when "11" =>
                         pattern_num <= "11";
                         pattern_count <= "11111";
-								pattern_previous <= not pattern_previous;
+								pattern_previous := "11";
                      when others =>
                         pattern_num <= "00";
                         pattern_count <= "00001";
@@ -967,38 +993,35 @@ begin
                --pattern_count媛  0쒖닔瑜댁슜꾩쓽⑦꽩 遺 (00 쒖쇅)
                else
                   if (random_count (1 downto 0) = "00") then
-                     if (random_count (3 downto 2) = "00") then
-                        if (random_count (5 downto 4) = "00") then
+                     if (random_count (2 downto 1) = "00") then
+                        if (random_count (3 downto 2) = "00") then
                            pattern_select := "01";
                         else
-                           pattern_select := random_count (5 downto 4);
+                           pattern_select := random_count (3 downto 2);
                         end if;
                      else
-                        pattern_select := random_count (3 downto 2);
+                        pattern_select := random_count (2 downto 1);
                      end if;
                   else
                      pattern_select := random_count (1 downto 0);
                   end if;
                   random_fixed := random_count(0);
-						if (pattern_select = pattern_previous) then
-							if (pattern_select = "11") then
-								pattern_select := "01";
-							end if;
-							pattern_select := pattern_select + 1;
+						if (pattern_select = "11") then
+							pattern_select := "01";
 						end if;
                   case pattern_select is
                      when "01" =>
                         pattern_num <= "01";
                         pattern_count <= "10011";
-								pattern_previous := "01";
+								pattern_previous := pattern_select;
                      when "10" =>
                         pattern_num <= "10";
                         pattern_count <= "11001";
-								pattern_previous := "10";
+								pattern_previous := pattern_select;
                      when "11" =>
                         pattern_num <= "11";
                         pattern_count <= "11111";
-								pattern_previous := "11";
+								pattern_previous := pattern_select;
                      when others =>
                         pattern_num <= "00";
                         pattern_count <= "00001";
@@ -1463,7 +1486,10 @@ begin
 					MHp <= 8;
 					boss_dead <= '0';
 					if (stage_data = "11")  then
-						score_cnt<=score;
+						score_cnt(15 downto 12)<="1001"-score(15 downto 12);
+						score_cnt(11 downto 8)<="1001"-score(11 downto 8);
+						score_cnt(7 downto 4)<="1001"-score(7 downto 4);
+						score_cnt(3 downto 0)<="1001"-score(3 downto 0);
 						if (hitted_cnt >= 10) then
 							hitted_cnt <= hitted_cnt - 10;
 							hitted_cnt_ten <= hitted_cnt_ten + 1;
