@@ -24,7 +24,7 @@ entity project is
       left_2 : in STD_LOGIC;
       right_2 : in STD_LOGIC;
       updown_2 : in STD_LOGIC;
-		invin : in std_logic);
+      invin : in std_logic);
 end project;
 
 architecture Behavioral of project is
@@ -61,7 +61,7 @@ architecture Behavioral of project is
          reattack_2 : in std_logic;
          attack_1_trans : in std_logic;
          attack_2_trans : in std_logic;
-			invin : in std_logic);
+         invin : in std_logic);
    end component;
    
    component digital_clock
@@ -531,7 +531,7 @@ entity data_gen is
          reattack_2 : in std_logic;
          attack_1_trans : in std_logic;
          attack_2_trans : in std_logic;
-			invin : in std_logic);
+         invin : in std_logic);
 end data_gen;
 architecture Behavioral of data_gen is
 --대좏샇 뺤쓽
@@ -1288,14 +1288,14 @@ begin
             --player가 겹쳤을 때 공격
             if (special = '1') then
                if (p1_curSt = 29) then
-						if(updown_1 = '0' or updown_2 = '0') then
-							Mhp <= Mhp - 1;
-							attack_1<='1';
-							attack_2<='1';	
-						end if;
+                  if(updown_1 = '0' or updown_2 = '0') then
+                     Mhp <= Mhp - 1;
+                     attack_1<='1';
+                     attack_2<='1';   
+                  end if;
                elsif (right_1 = '0' or right_2 = '0') then
                   Mhp <= Mhp - 1;
-						attack_1<='1';
+                  attack_1<='1';
                   attack_2<='1';
                end if;
             --섎㉧吏  寃쎌슦 怨듦꺽
@@ -1358,20 +1358,20 @@ begin
                case Mhp is
                   when 8 => reg_file(30) <= X"FF";
                             reg_file(31) <= X"FF";
-                  when 7 => reg_file(31) <= X"04";
+                  when 7 => reg_file(31) <= X"05";
                             reg_file(30) <= X"FF";
-                  when 6 => reg_file(31) <= X"05";
+                  when 6 => reg_file(31) <= X"06";
                             reg_file(30) <= X"FF";
-                  when 5 => reg_file(31) <= X"06";
+                  when 5 => reg_file(31) <= X"07";
                             reg_file(30) <= X"FF";
                   when 4 => reg_file(31) <= X"20";
                             reg_file(30) <= X"FF";
                   when 3 => reg_file(31) <= X"20";
-                            reg_file(30) <= X"04";
-                  when 2 => reg_file(31) <= X"20";
                             reg_file(30) <= X"05";
-                  when 1 => reg_file(31) <= X"20";
+                  when 2 => reg_file(31) <= X"20";
                             reg_file(30) <= X"06";
+                  when 1 => reg_file(31) <= X"20";
+                            reg_file(30) <= X"07";
                   when 0 => reg_file(31) <= X"20";
                             reg_file(30) <= X"20";
                   when others => Null;
@@ -1379,14 +1379,14 @@ begin
                
                
                case Uhp is
-                  when 4 => reg_file(14) <= X"14";
-                            reg_file(15) <= X"14";
-                  when 3 => reg_file(14) <= X"14";
-                            reg_file(15) <= X"1E";
-                  when 2 => reg_file(14) <= X"14";
-                            reg_file(15) <= X"20";
-                  when 1 => reg_file(14) <= X"1E";
-                            reg_file(15) <= X"20";
+                  when 4 => reg_file(14) <= X"2A";
+                            reg_file(15) <= X"2A";
+						when 3 => reg_file(14) <= X"2E";
+                            reg_file(15) <= X"2A";
+                  when 2 => reg_file(14) <= X"20";
+                            reg_file(15) <= X"2A";
+                  when 1 => reg_file(14) <= X"20";
+                            reg_file(15) <= X"2E";
                   when 0 => reg_file(14) <= X"20"; 
                             reg_file(15) <= X"20";
                   when others => Null;
@@ -1429,9 +1429,9 @@ begin
                reg_file(p2_preSt) <= X"20";
             end if;
                 
-			else
-			
-				reg_file(0) <= X"20";
+         else
+         
+            reg_file(0) <= X"20";
             reg_file(1) <= X"20";
             reg_file(2) <= X"20";
             reg_file(3) <= X"47";
@@ -1463,7 +1463,7 @@ begin
             reg_file(29) <= X"54";
             reg_file(30) <= X"20";
             reg_file(31) <= X"20";
-			
+         
          end if;
          
       end if;
@@ -1664,60 +1664,4 @@ begin
       elsif(attack_2='1' and reattack_2 = '1')then
          attack_2_trans<='0';
          cool_cnt2<="0011";
-         reattack_2<='0';
-      elsif(s01_clk = '1' and s01_clk'event)then
-         if (cool_cnt2 > "0000")then
-            attack_2_trans<='1';
-            cool_cnt2<=cool_cnt2-1;
-         else
-            reattack_2<='1';
-         end if;
-      end if;
-      
-   cool2<=cool_cnt2;
-   end process;
-   
-   process(s01_clk,FPGA_RSTB,stage)
-   variable m10_cnt,m01_cnt:std_logic_vector(3 downto 0);
-   variable s10_cnt,s01_cnt:std_logic_vector(3 downto 0);
-   begin
-      if(FPGA_RSTB='0')then
-         --LED00:00:00쒖떆
-         m10_cnt:="0000";
-         m01_cnt:="0000";
-         s10_cnt:="0000";
-         s01_cnt:="0000";
-      elsif(s01_clk='1' and s01_clk'event and stage>="01")then
-      --1Hz clockrising대㈃ 1珥利앷
-      s01_cnt:=s01_cnt+1;
-         if(s01_cnt>"1001")then
-         --珥덉쓽 1섏옄由ъ닔媛 10대릺硫珥덉쓽10섏옄由ъ닔 利앷
-            s01_cnt:="0000";
-            s10_cnt:=s10_cnt+1;
-         end if;
-         if(s10_cnt>"0101")then
-         --珥덉쓽 10섏옄由ъ닔媛 6대릺硫遺꾩쓽1먮━利앷
-            s10_cnt:="0000";
-            m01_cnt:=m01_cnt+1;
-         end if;
-         if(m01_cnt>"1001")then
-         --遺꾩쓽 1섏옄由ъ닔媛 10대릺硫遺꾩쓽10먮━利앷
-            m01_cnt:="0000";
-            m10_cnt:=m10_cnt+1;
-         end if;
-         if(m10_cnt>"0101")then
-         --遺꾩쓽 10섏옄由ъ닔媛 6대릺硫쒓컙먮━利앷
-            m10_cnt:="0000";
-            m01_cnt:="0000";
-            s10_cnt:="0000";
-            s01_cnt:="0000";
-         end if;
-      end if;
-   --怨꾩궛쒓컙媛믪쓣 留ㅼ묶
-   sec01_cnt<=s01_cnt;
-   sec10_cnt<=s10_cnt;
-   min01_cnt<=m01_cnt;
-   min10_cnt<=m10_cnt;
-   end process;
-   
-end Behavioral;
+         reattack_2
