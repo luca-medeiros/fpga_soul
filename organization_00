@@ -61,7 +61,8 @@ architecture Behavioral of project is
          reattack_2 : in std_logic;
          attack_1_trans : in std_logic;
          attack_2_trans : in std_logic;
-         invin : in std_logic);
+         invin : in std_logic;
+			score: in std_logic_vector(15 downto 0));
    end component;
    
    component digital_clock
@@ -82,7 +83,8 @@ architecture Behavioral of project is
          reattack_2 : inout std_logic;
          attack_1_trans : out std_logic;
          attack_2_trans : out std_logic;
-          stage: in std_logic_vector(1 downto 0));
+          stage: in std_logic_vector(1 downto 0);
+			 score: out std_logic_vector(15 downto 0));
    end component;
 -- 대좏샇 뺤쓽   
 signal data_out_reg, w_enable_reg : std_logic; 
@@ -92,14 +94,15 @@ signal stage : std_logic_vector(1 downto 0);
 signal reattack_1 , reattack_2 : std_logic;
 signal attack_1 , attack_2 : std_logic;
 signal attack_1_trans, attack_2_trans : std_logic;
-
+signal score: std_logic_vector(15 downto 0);
    Begin
       lcd : LCD_test port map(FPGA_RSTB, CLK, LCD_A, LCD_EN, LCD_D,
             data_out_reg, addr_reg, data_reg, w_enable_reg,stage);
       data : data_gen port map(FPGA_RSTB, CLK, w_enable_reg, data_out_reg,
-            addr_reg, data_reg,left_1,right_1,updown_1,left_2,right_2,updown_2,attack_1,attack_2,stage,reattack_1,reattack_2,attack_1_trans,attack_2_trans, invin);
+            addr_reg, data_reg,left_1,right_1,updown_1,left_2,right_2,updown_2,attack_1,attack_2,
+				stage,reattack_1,reattack_2,attack_1_trans,attack_2_trans, invin,score);
       clock : digital_clock port map(FPGA_RSTB,CLK,attack_1,attack_2,DIGIT,SEG_A,SEG_B,SEG_C,
-            SEG_D,SEG_E,SEG_F,SEG_G,SEG_DP,reattack_1,reattack_2,attack_1_trans,attack_2_trans,stage);
+            SEG_D,SEG_E,SEG_F,SEG_G,SEG_DP,reattack_1,reattack_2,attack_1_trans,attack_2_trans,stage,score);
 end Behavioral;
 
 library IEEE; --LED ㅼ젙 諛珥덇린遺 遺
@@ -129,7 +132,7 @@ signal lcd_cnt : std_logic_vector (8 downto 0);
 signal lcd_state : std_logic_vector (7 downto 0); --lcd_db瑜諛쏄퀬, clock곕씪 대룞
 signal lcd_nstate : std_logic_vector (7 downto 0);-- lcd_state next state
 signal lcd_db : std_logic_vector (7 downto 0);-- output꾨떖섎뒗 대좏샇
-signal stage_cnt: std_logic_vector(1 downto 0);
+signal stage_cnt: std_logic_vector (1 downto 0);
 
 signal load_100k : std_logic;
 signal clk_100k : std_logic;-- 내부 clock 100kHz 
@@ -388,9 +391,9 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
                   lcd_nstate <= X"40";
                when X"40" => lcd_db <= "00000000" ; --00000
                   lcd_nstate <= X"41";
-               when X"41" => lcd_db <= "00001111" ; --*****
+               when X"41" => lcd_db <= "00011111" ; --*****
                   lcd_nstate <= X"42";
-               when X"42" => lcd_db <= "00001111" ; --*****
+               when X"42" => lcd_db <= "00011111" ; --*****
                   lcd_nstate <= X"43";
                when X"43" => lcd_db <= "00011111" ; --*****
                   lcd_nstate <= X"44";
@@ -531,7 +534,8 @@ entity data_gen is
          reattack_2 : in std_logic;
          attack_1_trans : in std_logic;
          attack_2_trans : in std_logic;
-         invin : in std_logic);
+         invin : in std_logic;
+			score: in std_logic_vector(15 downto 0));
 end data_gen;
 architecture Behavioral of data_gen is
 --대좏샇 뺤쓽
@@ -542,6 +546,8 @@ architecture Behavioral of data_gen is
    signal pattern_num : std_logic_vector (1 downto 0);
    signal pattern_count : std_logic_vector (4 downto 0);
    signal cnt : std_logic_vector(4 downto 0);
+	signal hitted_cnt : std_logic_vector(4 downto 0);
+	signal hitted_cnt_ten : std_logic_vector(4 downto 0);
 
    type reg is array( 0 to 31 ) of std_logic_vector( 7 downto 0 ); -- 2D array
    signal reg_file : reg;
@@ -569,7 +575,9 @@ architecture Behavioral of data_gen is
    signal move_admit_1 : std_logic;
    signal move_admit_2 : std_logic;
    signal shield_admit : std_logic;
-
+	signal boss_dead : std_logic;
+	signal game_clear : std_logic;
+	signal score_cnt: std_logic_vector(15 downto 0);
    
 begin
    --4HZpatern_clock援ы쁽, 0.25珥덉뿉 대떦
@@ -596,6 +604,7 @@ begin
    --留pattern clock(0.25珥留덈떎 action뺤쓽
    process(FPGA_RSTB,patern_clk)
       variable pattern_select : std_logic_vector (1 downto 0);
+		variable pattern_previous : std_logic;
       variable random_fixed : std_logic;
    begin
       if(FPGA_RSTB = '0')then
@@ -608,8 +617,15 @@ begin
          pattern_num <= "00";
          pattern_count <= "00000";
          stage_data_saved <= "00";
+			random_count <= "0000000";
+			pattern_previous := '0';
+			pattern_select := "00";
 
       elsif(patern_clk'event and patern_clk='1')then
+         if (random_count = "1111111") then
+            random_count <= "0000000";
+         end if;
+			random_count <= random_count + 1;
          if (stage_data_saved /= stage_data) then
             --蹂댁뒪 蹂 寃쎈맖 ->  湲고뙣媛뺤젣 꾪솚 諛1.75珥~ 2.5珥 湲
             pattern_num <= "00";
@@ -649,14 +665,14 @@ begin
                --pattern_count媛  0쒖닔瑜댁슜꾩쓽⑦꽩 遺 (00 쒖쇅)
                else
                   if (random_count (1 downto 0) = "00") then
-                     if (random_count (3 downto 2) = "00") then
-                        if (random_count (5 downto 4) = "00") then
+                     if (random_count (2 downto 1) = "00") then
+                        if (random_count (3 downto 2) = "00") then
                            pattern_select := "01";
                         else
-                           pattern_select := random_count (5 downto 4);
+                           pattern_select := random_count (3 downto 2);
                         end if;
                      else
-                        pattern_select := random_count (3 downto 2);
+                        pattern_select := random_count (2 downto 1);
                      end if;
                   else
                      pattern_select := random_count (1 downto 0);
@@ -666,12 +682,15 @@ begin
                      when "01" =>
                         pattern_num <= "01";
                         pattern_count <= "10011";
+								pattern_previous <= not pattern_previous;
                      when "10" =>
                         pattern_num <= "10";
                         pattern_count <= "11001";
+								pattern_previous <= not pattern_previous;
                      when "11" =>
                         pattern_num <= "11";
                         pattern_count <= "11111";
+								pattern_previous <= not pattern_previous;
                      when others =>
                         pattern_num <= "00";
                         pattern_count <= "00001";
@@ -961,16 +980,25 @@ begin
                      pattern_select := random_count (1 downto 0);
                   end if;
                   random_fixed := random_count(0);
+						if (pattern_select = pattern_previous) then
+							if (pattern_select = "11") then
+								pattern_select := "01";
+							end if;
+							pattern_select := pattern_select + 1;
+						end if;
                   case pattern_select is
                      when "01" =>
                         pattern_num <= "01";
                         pattern_count <= "10011";
+								pattern_previous := "01";
                      when "10" =>
                         pattern_num <= "10";
                         pattern_count <= "11001";
+								pattern_previous := "10";
                      when "11" =>
                         pattern_num <= "11";
                         pattern_count <= "11111";
+								pattern_previous := "11";
                      when others =>
                         pattern_num <= "00";
                         pattern_count <= "00001";
@@ -1000,7 +1028,7 @@ begin
                      -- Delay of 1s ~ 1.75s
                      when "00000" =>
                         pattern_num <= "00";
-                        pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+                        pattern_count <= "00100" + ("00" & random_count(2 downto 0));
                      when others =>
                         NULL;
                   end case;
@@ -1093,22 +1121,21 @@ begin
    --stage data 꾨떖
    stage <= stage_data;
       --1HZclock(move_clk)援ы쁽, 1珥덉뿉 대떦
-   
-
+  
    --FPGA clock留덈떎 묐룞섎뒗 ㅼ떆媛action. 쇨꺽 먯젙 좎 됰룞곕Ⅸ codeш린 묒꽦 諛붾엺
    process(FPGA_RSTB,clk,attack_1_trans,attack_2_trans,move_clk)
    variable move_cnt_1 : integer range 0 to 1000000;
    variable move_cnt_2 : integer range 0 to 1000000;
-   variable shield_cnt : integer range 0 to 1000000;
+   variable shield_cnt : integer range 0 to 2000000;
    begin
       if(FPGA_RSTB = '0')then
          for i in 0 to 31 loop
             hit_on(i) <= '0';
             reg_file(i) <= X"20";
          end loop;
-         random_count <= "0000000";
          stage_data  <= "00";
          game_over <= '0';
+			game_clear <= '0';
         
          p1_curSt <= 0;
          p2_curSt <= 16;
@@ -1123,10 +1150,12 @@ begin
          shield_admit<='0';
          shield_cnt :=0;
          Mhp <= 0;
+			hitted_cnt <= "00000";
+			boss_dead <= '0';
       elsif(clk'event and clk='1')then
          if (shield_admit='1') then
             shield_cnt:= shield_cnt +1;
-            if(shield_cnt=1000000) then
+            if(shield_cnt=2000000) then
                shield_cnt:=0;
                shield_admit<='0';
             end if;
@@ -1145,12 +1174,11 @@ begin
                move_admit_2 <= '1';
             end if;
          end if;
-         -- 7bit 쒖닔 random_count 앹꽦
-         random_count <= random_count + 1;
-         if (random_count = "1111111") then
-            random_count <= "0000000";
-         end if;
+      
+
          --쒖옉  湲以쇰븣
+			
+			
          if (stage_data = "00") then
             --   FPGA  SOUL
             -- PUSH ANY BUTTON
@@ -1287,28 +1315,55 @@ begin
             --player 공격
             --player가 겹쳤을 때 공격
             if (special = '1') then
-               if (p1_curSt = 29) then
-                  if(updown_1 = '0' or updown_2 = '0') then
-                     Mhp <= Mhp - 1;
-                     attack_1<='1';
-                     attack_2<='1';   
-                  end if;
-               elsif (right_1 = '0' or right_2 = '0') then
-                  Mhp <= Mhp - 1;
-                  attack_1<='1';
-                  attack_2<='1';
-               end if;
+					if reattack_1 = '1' and reattack_2='1' then
+						if (p1_curSt = 29) then	
+							if(updown_1 = '0' or updown_2 = '0') then
+								if (Mhp = 0) then
+									boss_dead <= '1';
+								else
+									Mhp <= Mhp - 1;
+								end if;
+								p1_curSt <= p1_curSt;
+								p2_curSt <= p2_curSt;
+								attack_1<='1';
+								attack_2<='1';   
+							end if;
+						elsif (right_1 = '0' or right_2 = '0') then
+							if (Mhp = 0) then
+								boss_dead <= '1';
+							else
+								Mhp <= Mhp - 1;
+							end if;
+							p1_curSt <= p1_curSt;
+							p2_curSt <= p2_curSt;
+							attack_1<='1';
+							attack_2<='1';
+						end if;
+						if(left_1 = '0') then
+							p1_curSt <= p1_curSt-1;
+						elsif (left_2 = '0') then
+							p2_curSt <= p2_curSt-1;
+						end if;	
+					end if;
             --섎㉧吏  寃쎌슦 怨듦꺽
             else
                if (reattack_1 = '1') then
                   if (p1_curSt = 12) then
                      if (right_1 = '0') then
-                        Mhp <= Mhp - 1;
+								if (Mhp = 0) then
+									boss_dead <= '1';
+								else
+									Mhp <= Mhp - 1;
+								end if;
                         attack_1<='1';
                      end if;
                   elsif (p1_curSt = 29) then
                      if (updown_1 = '0') then
-                        Mhp <= Mhp - 1;
+                        if (Mhp = 0) then
+									boss_dead <= '1';
+								else
+									Mhp <= Mhp - 1;
+								end if;
                         attack_1<='1';
                      end if;
                   end if;
@@ -1316,12 +1371,20 @@ begin
                if (reattack_2 = '1') then
                   if (p2_curSt = 12) then
                      if (right_2 = '0') then
-                        Mhp <= Mhp - 1;
+                        if (Mhp = 0) then
+									boss_dead <= '1';
+								else
+									Mhp <= Mhp - 1;
+								end if;
                         attack_2<='1';
                      end if;
                   elsif (p2_curSt = 29) then
                      if (updown_2 = '0') then
-                        Mhp <= Mhp - 1;
+                        if (Mhp = 0) then
+									boss_dead <= '1';
+								else
+									Mhp <= Mhp - 1;
+								end if;
                         attack_2<='1';
                      end if;
                   end if;
@@ -1354,26 +1417,27 @@ begin
                
             end loop;
             reg_file(13) <= X"03";
+				
             if (stage_data /= "00") then
                case Mhp is
                   when 8 => reg_file(30) <= X"FF";
                             reg_file(31) <= X"FF";
-                  when 7 => reg_file(31) <= X"05";
-                            reg_file(30) <= X"FF";
-                  when 6 => reg_file(31) <= X"06";
-                            reg_file(30) <= X"FF";
-                  when 5 => reg_file(31) <= X"07";
-                            reg_file(30) <= X"FF";
-                  when 4 => reg_file(31) <= X"20";
-                            reg_file(30) <= X"FF";
-                  when 3 => reg_file(31) <= X"20";
-                            reg_file(30) <= X"05";
-                  when 2 => reg_file(31) <= X"20";
-                            reg_file(30) <= X"06";
-                  when 1 => reg_file(31) <= X"20";
-                            reg_file(30) <= X"07";
-                  when 0 => reg_file(31) <= X"20";
-                            reg_file(30) <= X"20";
+                  when 7 => reg_file(30) <= X"05";
+                            reg_file(31) <= X"FF";
+                  when 6 => reg_file(30) <= X"06";
+                            reg_file(31) <= X"FF";
+                  when 5 => reg_file(30) <= X"07";
+                            reg_file(31) <= X"FF";
+                  when 4 => reg_file(30) <= X"20";
+                            reg_file(31) <= X"FF";
+                  when 3 => reg_file(30) <= X"20";
+                            reg_file(31) <= X"05";
+                  when 2 => reg_file(30) <= X"20";
+                            reg_file(31) <= X"06";
+                  when 1 => reg_file(30) <= X"20";
+                            reg_file(31) <= X"07";
+                  when 0 => reg_file(30) <= X"20";
+                            reg_file(31) <= X"20";
                   when others => Null;
                end case;
                
@@ -1392,6 +1456,27 @@ begin
                   when others => Null;
                end case;
             end if;
+				
+				if (boss_dead = '1') then
+					hitted_cnt <= 4 - Uhp + hitted_cnt;
+					Uhp <= 4;
+					MHp <= 8;
+					boss_dead <= '0';
+					if (stage_data = "11")  then
+						score_cnt<=score;
+						if (hitted_cnt >= 10) then
+							hitted_cnt <= hitted_cnt - 10;
+							hitted_cnt_ten <= hitted_cnt_ten + 1;
+						end if;
+						game_clear <= '1';
+						game_over <= '1';
+					else
+						stage_data <= stage_data + 1;
+					end if;
+					p1_curSt <= 0;
+					p2_curSt <= 16;
+				end if;
+				
             --player媛  怨듦꺽留욎븯
             if (shield_admit = '0' and invin = '0' and((hit_on(p1_curSt) = '1') or (hit_on(p2_curSt) = '1'))) then
                if (Uhp = 0) then
@@ -1430,40 +1515,73 @@ begin
             end if;
                 
          else
-         
-            reg_file(0) <= X"20";
-            reg_file(1) <= X"20";
-            reg_file(2) <= X"20";
-            reg_file(3) <= X"47";
-            reg_file(4) <= X"41";
-            reg_file(5) <= X"4D";
-            reg_file(6) <= X"45";
-            reg_file(7) <= X"20";
-            reg_file(8) <= X"20";
-            reg_file(9) <= X"4F";
-            reg_file(10) <= X"56";
-            reg_file(11) <= X"45";
-            reg_file(12) <= X"52";
-            reg_file(13) <= X"20";
-            reg_file(14) <= X"20";
-            reg_file(15) <= X"20";
-            reg_file(16) <= X"20";
-            reg_file(17) <= X"20";
-            reg_file(18) <= X"50";
-            reg_file(19) <= X"52";
-            reg_file(20) <= X"45";
-            reg_file(21) <= X"53";
-            reg_file(22) <= X"53";
-            reg_file(23) <= X"20";
-            reg_file(24) <= X"20";
-            reg_file(25) <= X"52";
-            reg_file(26) <= X"45";
-            reg_file(27) <= X"53";
-            reg_file(28) <= X"45";
-            reg_file(29) <= X"54";
-            reg_file(30) <= X"20";
-            reg_file(31) <= X"20";
-         
+				if (game_clear = '1') then
+					reg_file(0) <= X"20";
+					reg_file(1) <= X"20";
+					reg_file(2) <= X"53";
+					reg_file(3) <= X"43";
+					reg_file(4) <= X"4F";
+					reg_file(5) <= X"52";
+					reg_file(6) <= X"45";
+					reg_file(7) <= X"20";
+					reg_file(8) <=score_cnt(15 downto 12) + X"30";
+					reg_file(9) <= score_cnt(11 downto 8) + X"30";
+					reg_file(10) <= score_cnt(7 downto 4) + X"30";
+					reg_file(11) <= score_cnt(3 downto 0) + X"30";
+					reg_file(12) <= X"20";
+					reg_file(13) <= X"20";
+					reg_file(14) <= X"20";
+					reg_file(15) <= X"20";
+					reg_file(16) <= X"20";
+					reg_file(17) <= X"20";
+					reg_file(18) <= X"4C";--L
+					reg_file(19) <= X"4F";--O
+					reg_file(20) <= X"53";--S
+					reg_file(21) <= X"45";--E
+					reg_file(22) <= X"20";--
+					reg_file(23) <= X"4C";--L
+					reg_file(24) <= X"49";--I
+					reg_file(25) <= X"46";--F
+					reg_file(26) <= X"45";--E
+					reg_file(27) <= X"20";
+					reg_file(28) <= hitted_cnt_ten + X"30";
+					reg_file(29) <= hitted_cnt + X"30";
+					reg_file(30) <= X"20";
+					reg_file(31) <= X"20";
+				else
+					reg_file(0) <= X"20";
+					reg_file(1) <= X"20";
+					reg_file(2) <= X"20";
+					reg_file(3) <= X"47";
+					reg_file(4) <= X"41";
+					reg_file(5) <= X"4D";
+					reg_file(6) <= X"45";
+					reg_file(7) <= X"20";
+					reg_file(8) <= X"20";
+					reg_file(9) <= X"4F";
+					reg_file(10) <= X"56";
+					reg_file(11) <= X"45";
+					reg_file(12) <= X"52";
+					reg_file(13) <= X"20";
+					reg_file(14) <= X"20";
+					reg_file(15) <= X"20";
+					reg_file(16) <= X"20";
+					reg_file(17) <= X"20";
+					reg_file(18) <= X"50";
+					reg_file(19) <= X"52";
+					reg_file(20) <= X"45";
+					reg_file(21) <= X"53";
+					reg_file(22) <= X"53";
+					reg_file(23) <= X"20";
+					reg_file(24) <= X"20";
+					reg_file(25) <= X"52";
+					reg_file(26) <= X"45";
+					reg_file(27) <= X"53";
+					reg_file(28) <= X"45";
+					reg_file(29) <= X"54";
+					reg_file(30) <= X"20";
+					reg_file(31) <= X"20";
+				end if;
          end if;
          
       end if;
@@ -1517,7 +1635,8 @@ entity digital_clock is
          reattack_2 : inout std_logic;
          attack_1_trans : out std_logic;
          attack_2_trans : out std_logic;
-          stage: in std_logic_vector(1 downto 0));
+          stage: in std_logic_vector(1 downto 0);
+			 score: out std_logic_vector(15 downto 0));
 end digital_clock;
 
 architecture Behavioral of digital_clock is
@@ -1533,6 +1652,7 @@ signal data:std_logic_vector(3 downto 0);
 signal seg: std_logic_vector(7 downto 0);
 signal cool_cnt1: std_logic_vector(3 downto 0);
 signal cool_cnt2: std_logic_vector(3 downto 0);
+signal hitted_num : std_logic_vector (5 downto 0);
 
 begin
    process(sel)
@@ -1664,4 +1784,62 @@ begin
       elsif(attack_2='1' and reattack_2 = '1')then
          attack_2_trans<='0';
          cool_cnt2<="0011";
-         reattack_2
+         reattack_2<='0';
+      elsif(s01_clk = '1' and s01_clk'event)then
+         if (cool_cnt2 > "0000")then
+            attack_2_trans<='1';
+            cool_cnt2<=cool_cnt2-1;
+         else
+            reattack_2<='1';
+         end if;
+      end if;
+      
+   cool2<=cool_cnt2;
+   end process;
+   
+   process(s01_clk,FPGA_RSTB,stage)
+   variable m10_cnt,m01_cnt:std_logic_vector(3 downto 0);
+   variable s10_cnt,s01_cnt:std_logic_vector(3 downto 0);
+   begin
+      if(FPGA_RSTB='0')then
+         --LED00:00:00쒖떆
+         m10_cnt:="0000";
+         m01_cnt:="0000";
+         s10_cnt:="0000";
+         s01_cnt:="0000";
+      elsif(s01_clk='1' and s01_clk'event and stage>="01")then
+      --1Hz clockrising대㈃ 1珥利앷
+      s01_cnt:=s01_cnt+1;
+         if(s01_cnt>"1001")then
+         --珥덉쓽 1섏옄由ъ닔媛 10대릺硫珥덉쓽10섏옄由ъ닔 利앷
+            s01_cnt:="0000";
+            s10_cnt:=s10_cnt+1;
+         end if;
+         if(s10_cnt>"0101")then
+         --珥덉쓽 10섏옄由ъ닔媛 6대릺硫遺꾩쓽1먮━利앷
+            s10_cnt:="0000";
+            m01_cnt:=m01_cnt+1;
+         end if;
+         if(m01_cnt>"1001")then
+         --遺꾩쓽 1섏옄由ъ닔媛 10대릺硫遺꾩쓽10먮━利앷
+            m01_cnt:="0000";
+            m10_cnt:=m10_cnt+1;
+         end if;
+         if(m10_cnt>"0101")then
+         --遺꾩쓽 10섏옄由ъ닔媛 6대릺硫쒓컙먮━利앷
+            m10_cnt:="0000";
+            m01_cnt:="0000";
+            s10_cnt:="0000";
+            s01_cnt:="0000";
+         end if;
+      end if;
+   --怨꾩궛쒓컙媛믪쓣 留ㅼ묶
+   sec01_cnt<=s01_cnt;
+   sec10_cnt<=s10_cnt;
+   min01_cnt<=m01_cnt;
+   min10_cnt<=m10_cnt;
+	
+	score<= min10_cnt & min01_cnt & sec10_cnt & sec01_cnt;
+   end process;
+   
+end Behavioral;
