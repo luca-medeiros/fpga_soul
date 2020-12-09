@@ -1021,15 +1021,16 @@ begin
                   case pattern_select is
                      when "01" =>
                         pattern_num <= "01";
-                        pattern_count <= "10011";
+                        pattern_count <= "01111";
 								pattern_previous := pattern_select;
                      when "10" =>
                         pattern_num <= "10";
-                        pattern_count <= "11001";
+                        pattern_count <= "00110";
 								pattern_previous := pattern_select;
                      when "11" =>
-                        pattern_num <= "11";
-                        pattern_count <= "11111";
+                        pattern_num <= "01";
+								random_fixed := '1';
+                        pattern_count <= "01111";
 								pattern_previous := pattern_select;
                      when others =>
                         pattern_num <= "00";
@@ -1040,289 +1041,146 @@ begin
 					-- 	|X|_|_|_|_|2<|>|_|_|1<|>|_|_|_|HP|HP| 
 				elsif (pattern_num = "01") then
 					pattern_count <= pattern_count - 1;
-					case pattern_count is
-						when "10001" =>
-							if p1_curSt >= 15 then -- If player1 is on line 2
-								if p1_curSt >= 23 then -- And right side of map
-									position_arrow <= 21;
-								else
-									position_arrow <= 5;
+					if (random_fixed = '0') then
+						case pattern_count is
+							when "01110" =>
+								if p1_curSt >= 15 then -- If player1 is on line 2
+									if p1_curSt >= 23 then -- And right side of map
+										position_arrow <= 21;
+									else
+										position_arrow <= 5;
+									arrow_pixel(position_arrow) <= '1';
+									reverse_arrow_pixel(position_arrow + 1) <= '1';
+									end if;
+								else -- Line 1
+									if p1_curSt >= 7 then -- Right side of map
+										position_arrow <= 5;
+									else
+										position_arrow <= 21;
+									end if;
+								end if;
+								
+							when "01101" =>
 								arrow_pixel(position_arrow) <= '1';
 								reverse_arrow_pixel(position_arrow + 1) <= '1';
-								end if;
-							else -- Line 1
-								if p1_curSt >= 7 then -- Right side of map
-									position_arrow <= 5;
+								
+								
+							when "01001" =>
+								if (position_arrow = 21) then
+									arrow_pixel(position_arrow - 12) <= '1';
+									reverse_arrow_pixel(position_arrow - 11) <= '1';
 								else
-									position_arrow <= 21;
+									arrow_pixel(position_arrow + 20) <= '1';
+									reverse_arrow_pixel(position_arrow +21) <= '1';
 								end if;
-							end if;
-							
-						when "10000" =>
-							arrow_pixel(position_arrow) <= '1';
-							reverse_arrow_pixel(position_arrow + 1) <= '1';
-							
-							
-						when "01111" =>
-							if (position_arrow = 21) then
-								arrow_pixel(position_arrow - 12) <= '1';
-								reverse_arrow_pixel(position_arrow - 11) <= '1';
-							else
-								arrow_pixel(position_arrow + 20) <= '1';
-								reverse_arrow_pixel(position_arrow +21) <= '1';
-							end if;
-							first_warning(0) <= '1';
-							first_warning(16) <= '1';
+								first_warning(0) <= '1';
+								first_warning(16) <= '1';
 
-
-					-- 	|_|_|_|_|X|P|X|_|_|X|_|_|_|B|HP|HP|
-					-- 	|_|_|_|_|_|X|_|_|X|P|X|_|_|_|HP|HP|
-					-- Warning on all 3 blocks around player 1 and 2
-						when "00110" =>
-							if p1_curSt >= 15 then
-								first_warning(p1_curSt - 16 ) <= '1';
-							else
-								first_warning(p1_curSt + 16 ) <= '1';
-							end if;
-							first_warning(p1_curSt -1 ) <= '1';
-							first_warning(p1_curSt + 1 ) <= '1';
-							
-							if p2_curSt >= 15 then
-								first_warning(p2_curSt - 16 ) <= '1';
-							else
-								first_warning(p2_curSt + 16 ) <= '1';
-							end if;
-							first_warning(p2_curSt -1 ) <= '1';
-							first_warning(p2_curSt + 1 ) <= '1';
-							
-					-- 	|_|_|_|_|_|P|_|_|_|_|_|_|<|B|HP|HP|
-					-- 	|>|_|_|_|_|_|_|_|_|P|_|_|_|_|HP|HP|
-						when "00100" =>
-							if p1_curSt >= 15 then -- If player1 is on line 2
-								if p1_curSt >= 23 then -- And right side of map
-									reverse_arrow_pixel(16) <= '1'; -- Send reverse on line 2
+						-- 	|_|_|_|_|_|_|_|_|_|_|_|_|X|B|HP|HP|
+						-- 	|_|_|_|_|_|_|_|_|_|_|_|_|_|X|HP|HP|
+							when "00110" =>
+								first_warning(12) <= '1';
+								first_warning(29) <= '1';
+								
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("00" & random_count(2 downto 0));
+							when others =>
+								NULL;
+						end case;
+					else
+						case pattern_count is
+						-- 	|_|_|_|_|X|P|X|_|_|X|_|_|_|B|HP|HP|
+						-- 	|_|_|_|_|_|X|_|_|X|P|X|_|_|_|HP|HP|
+						-- Warning on all 3 blocks around player 1 and 2
+							when "01101" =>
+								if p1_curSt >= 15 then
+									first_warning(p1_curSt - 16 ) <= '1';
 								else
-									arrow_pixel(29) <= '1'; -- Send arrow on line 2
+									first_warning(p1_curSt + 16 ) <= '1';
 								end if;
-							else -- Line 1
-								if p1_curSt >= 7 then -- Right side of map
-									reverse_arrow_pixel(0) <= '1'; -- Send reverse on line 1
+								first_warning(p1_curSt -1 ) <= '1';
+								first_warning(p1_curSt + 1 ) <= '1';
+								
+								if p2_curSt >= 15 then
+									first_warning(p2_curSt - 16 ) <= '1';
 								else
-									arrow_pixel(12) <= '1'; -- Send arrow on line 1
+									first_warning(p2_curSt + 16 ) <= '1';
 								end if;
-							end if;
-					-- 	|_|_|_|_|_|_|_|_|_|_|_|_|X|B|HP|HP|
-					-- 	|_|_|_|_|_|_|_|_|_|_|_|_|_|X|HP|HP|
-						when "00010" =>
-							first_warning(12) <= '1';
-							first_warning(29) <= '1';
-							
-						when "00000" =>
-							pattern_num <= "00";
-							pattern_count <= "00010" + ("00" & random_count(2 downto 0));
-						when others =>
-							NULL;
-					end case;
-					
-------------------------------------------------------------
-------------- 임시로 보스 1 패턴 가져다 놓음!!!!!!!!!!!!!!!!!!!!1
+								first_warning(p2_curSt -1 ) <= '1';
+								first_warning(p2_curSt + 1 ) <= '1';
+								
+						-- 	|_|_|_|_|_|P|_|_|_|_|_|_|<|B|HP|HP|
+						-- 	|>|_|_|_|_|_|_|_|_|P|_|_|_|_|HP|HP|
+							when "01010" =>
+								if p1_curSt >= 15 then -- If player1 is on line 2
+									if p1_curSt >= 23 then -- And right side of map
+										reverse_arrow_pixel(16) <= '1'; -- Send reverse on line 2
+									else
+										arrow_pixel(29) <= '1'; -- Send arrow on line 2
+									end if;
+								else -- Line 1
+									if p1_curSt >= 7 then -- Right side of map
+										reverse_arrow_pixel(0) <= '1'; -- Send reverse on line 1
+									else
+										arrow_pixel(12) <= '1'; -- Send arrow on line 1
+									end if;
+								end if;
+						-- 	|_|_|_|_|_|_|_|_|_|_|_|_|X|B|HP|HP|
+						-- 	|_|_|_|_|_|_|_|_|_|_|_|_|_|X|HP|HP|
+							when "00010" =>
+								first_warning(12) <= '1';
+								first_warning(29) <= '1';
+								
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("00" & random_count(2 downto 0));
+							when others =>
+								NULL;
+						end case;
+					end if;
+				-- 	|X|X|X|_|_|_|_|_|_|_|_|_|_|B|HP|HP|
+				-- 	|X|X|X|_|_|_|_|_|_|_|_|_|_|_|HP|HP|
 				elsif (pattern_num = "10") then
                pattern_count <= pattern_count - 1;
-               case pattern_count is
-                  when "11110" =>
-                     first_warning(29) <= '1';
-                  when "11100" =>
-                     first_warning(12) <= '1';
-                     first_warning(28) <= '1';
-                  when "11010" =>
-                     first_warning(11) <= '1';
-                     first_warning(27) <= '1';
-                  when "11000" =>
-                     first_warning(10) <= '1';
-                     first_warning(26) <= '1';
-                  when "10110" =>
-                     first_warning(9) <= '1';
-                     first_warning(25) <= '1';
-                     first_warning(29) <= '1';
-                  when "10100" =>
-                     first_warning(8) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(12) <= '1';
-                     first_warning(28) <= '1';
-                  when "10010" =>
-                     first_warning(7) <= '1';
-                     first_warning(23) <= '1';
-                     first_warning(11) <= '1';
-                     first_warning(27) <= '1';   
-                  when "10000" =>
-                     first_warning(6) <= '1';
-                     first_warning(22) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(26) <= '1';
-                  when "01110" =>
-                     first_warning(5) <= '1';
-                     first_warning(21) <= '1';
-                     first_warning(9) <= '1';
-                     first_warning(25) <= '1';
-                     first_warning(29) <= '1';
-                  when "01100" =>
-                     first_warning(4) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(8) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(12) <= '1';
-                     first_warning(28) <= '1';
-                  when "01010" =>
-                     first_warning(3) <= '1';
-                     first_warning(19) <= '1';
-                     first_warning(7) <= '1';
-                     first_warning(23) <= '1';
-                     first_warning(11) <= '1';
-                     first_warning(27) <= '1';
-                  when "01000" =>
-                     first_warning(2) <= '1';
-                     first_warning(18) <= '1';
-                     first_warning(6) <= '1';
-                     first_warning(22) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(26) <= '1';   
-                  when "00100" =>
-                     first_warning(1) <= '1';
-                     first_warning(17) <= '1';
-                     first_warning(5) <= '1';
-                     first_warning(21) <= '1';
-                     first_warning(9) <= '1';
-                     first_warning(25) <= '1';
-                     first_warning(29) <= '1';
-                  when "00010" =>
-                     first_warning(0) <= '1';
-                     first_warning(16) <= '1';
-                     first_warning(4) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(8) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(12) <= '1';   
-                     first_warning(28) <= '1';                     
-                  --세번째 패턴 종료. (1초 ~ 1.5초) 대기시간을 갖는 대기 패턴으로 넘어감
-                  when "00000" =>
-                     pattern_num <= "00";
-                     pattern_count <= "00100" + ("000" & random_count(1 downto 0));
-                  when others =>
-                     NULL;
-               end case;
-				elsif (pattern_num = "11") then
-               pattern_count <= pattern_count - 1;
-               if (random_fixed = '0') then
-                  case pattern_count is
-                     when "11000" =>
-                        arrow_pixel(12) <= '1';
-                        first_warning(16) <= '1';
-                        first_warning(17) <= '1';
-                        first_warning(18) <= '1';
-                        first_warning(19) <= '1';
-                        first_warning(20) <= '1';
-                        first_warning(21) <= '1';
-                        first_warning(22) <= '1';
-                        first_warning(23) <= '1';
-                        first_warning(24) <= '1';
-                        first_warning(25) <= '1';
-                        first_warning(26) <= '1';
-                        first_warning(27) <= '1';
-                        first_warning(28) <= '1';
-                        first_warning(29) <= '1';
-                     when "10000" =>
-                        arrow_pixel(12) <= '1';
-                        first_warning(16) <= '1';
-                        first_warning(17) <= '1';
-                        first_warning(18) <= '1';
-                        first_warning(19) <= '1';
-                        first_warning(20) <= '1';
-                        first_warning(21) <= '1';
-                        first_warning(22) <= '1';
-                        first_warning(23) <= '1';
-                        first_warning(24) <= '1';
-                        first_warning(25) <= '1';
-                        first_warning(26) <= '1';
-                        first_warning(27) <= '1';
-                        first_warning(28) <= '1';
-                        first_warning(29) <= '1';
-                     when "01000" =>
-                        arrow_pixel(12) <= '1';
-                        first_warning(16) <= '1';
-                        first_warning(17) <= '1';
-                        first_warning(18) <= '1';
-                        first_warning(19) <= '1';
-                        first_warning(20) <= '1';
-                        first_warning(21) <= '1';
-                        first_warning(22) <= '1';
-                        first_warning(23) <= '1';
-                        first_warning(24) <= '1';
-                        first_warning(25) <= '1';
-                        first_warning(26) <= '1';
-                        first_warning(27) <= '1';
-                        first_warning(28) <= '1';
-                        first_warning(29) <= '1';
-                     --두번째 패턴 종료. (0.5초 ~ 1.25초) 대기시간을 갖는 대기 패턴으로 넘어감
-                     when "00000" =>
-                        pattern_num <= "00";
-                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
-                     when others =>
-                        NULL;
-                  end case;
-               else
-                  case pattern_count is
-                     when "11000" =>
-                        arrow_pixel(29) <= '1';
-                        first_warning(0) <= '1';
-                        first_warning(1) <= '1';
-                        first_warning(2) <= '1';
-                        first_warning(3) <= '1';
-                        first_warning(4) <= '1';
-                        first_warning(5) <= '1';
-                        first_warning(6) <= '1';
-                        first_warning(7) <= '1';
-                        first_warning(8) <= '1';
-                        first_warning(9) <= '1';
-                        first_warning(10) <= '1';
-                        first_warning(11) <= '1';
-                        first_warning(12) <= '1';
-                     when "10000" =>
-                        arrow_pixel(29) <= '1';
-                        first_warning(0) <= '1';
-                        first_warning(1) <= '1';
-                        first_warning(2) <= '1';
-                        first_warning(3) <= '1';
-                        first_warning(4) <= '1';
-                        first_warning(5) <= '1';
-                        first_warning(6) <= '1';
-                        first_warning(7) <= '1';
-                        first_warning(8) <= '1';
-                        first_warning(9) <= '1';
-                        first_warning(10) <= '1';
-                        first_warning(11) <= '1';
-                        first_warning(12) <= '1';
-                     when "01000" =>
-                        arrow_pixel(29) <= '1';
-                        first_warning(0) <= '1';
-                        first_warning(1) <= '1';
-                        first_warning(2) <= '1';
-                        first_warning(3) <= '1';
-                        first_warning(4) <= '1';
-                        first_warning(5) <= '1';
-                        first_warning(6) <= '1';
-                        first_warning(7) <= '1';
-                        first_warning(8) <= '1';
-                        first_warning(9) <= '1';
-                        first_warning(10) <= '1';
-                        first_warning(11) <= '1';
-                        first_warning(12) <= '1';
-                     --두번째 패턴 종료. (0.5초 ~ 1.25초) 대기시간을 갖는 대기 패턴으로 넘어감
-                     when "00000" =>
-                        pattern_num <= "00";
-                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
-                     when others =>
-                        NULL;
-                  end case;
+					if (random_fixed = '0') then
+						case pattern_count is
+							when "00101" =>
+								first_warning(0) <= '1';
+								first_warning(16) <= '1';
+							when "00011" =>
+								first_warning(1) <= '1';
+								first_warning(17) <= '1';
+							when "00010" =>
+								first_warning(2) <= '1';
+								first_warning(18) <= '1';  
+							                    
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+				-- 	|_|_|_|_|_|_|_|_|_|_|X|X|X|B|HP|HP|
+				-- 	|_|_|_|_|_|_|_|_|_|_|X|X|X|X|HP|HP|
+					else
+						case pattern_count is
+							when "00101" =>
+								first_warning(29) <= '1';
+								first_warning(12) <= '1';
+								first_warning(28) <= '1';
+							when "00011" =>
+								first_warning(11) <= '1';
+								first_warning(27) <= '1';
+							when "00010" =>
+								first_warning(10) <= '1';
+								first_warning(26) <= '1';                 
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
                end if;
 				end if;
 
@@ -1365,7 +1223,7 @@ begin
 								pattern_previous := "10";
                      when "11" =>
                         pattern_num <= "11";
-                        pattern_count <= "11111";
+                        pattern_count <= "10000";
 								pattern_previous := "11";
                      when others =>
                         pattern_num <= "00";
@@ -1373,12 +1231,12 @@ begin
                   end case;
                end if;
             --Pattern 1-1 : |x|_|x|_|x|_|_|_|x|_|x|_|x|B|HP|HP|
-            --              |_|x|_|_|_|x|_|x|_|_|_|x|_|x|HP|HP|
+            --              |_|x|_|_|_|x|_|x|_|_|_|x|_|<|HP|HP|
             elsif (pattern_num = "01") then
                pattern_count <= pattern_count - 1;
                if (random_fixed = '0') then
                   case pattern_count is
-                     when "10010" | "01011" =>
+                     when "10010" | "01011"  | "01000" =>
 								arrow_pixel(29) <= '1';
                         first_warning(0) <= '1';
                         first_warning(2) <= '1';
@@ -1405,7 +1263,7 @@ begin
             --           	 |x|_|x|_|x|_|x|_|x|_|x|_|x|_|HP|HP|
                else
                   case pattern_count is
-                     when "10001" =>
+                     when "10010" | "01011"  | "01000" =>
 								reverse_arrow_pixel(16) <= '1';
                         first_warning(1) <= '1';
                         first_warning(3) <= '1';
@@ -1419,19 +1277,8 @@ begin
                         first_warning(26) <= '1';
                         first_warning(28) <= '1';
 
-							when "01101" =>
-                        first_warning(1) <= '1';
-                        first_warning(3) <= '1';
-                        first_warning(5) <= '1';
-                        first_warning(7) <= '1';
-                        first_warning(11) <= '1';
-                        first_warning(13) <= '1';
-                        first_warning(16) <= '1';
-                        first_warning(20) <= '1';
-                        first_warning(24) <= '1';
-                        first_warning(26) <= '1';
-                        first_warning(28) <= '1';
-                     -- Delay of 1s ~ 1.75s
+
+                     -- Delay of 0.5s ~ 1.25s
                      when "00000" =>
                         pattern_num <= "00";
                         pattern_count <= "00010" + ("000" & random_count(1 downto 0));
@@ -1505,45 +1352,68 @@ begin
                   when others =>
                      NULL;
                end case;
-				-- Pattern 3 **-- NOT USING RANDOM PROBLEM
+				-- Pattern 3 
 				-- 		|0|1|2|3|4|5|6|7|8|9|0|1|2|B|HP|HP|
 				-- 		|6|7|8|9|0|1|2|3|4|5|6|7|8|9|HP|HP|
 				-- 		|>|_|_|_|_|_|_|_|_|_|_|_|<|B|HP|HP|
-				-- 		|>|_|_|_|_|_|_|_|_|_|_|_|_|<|HP|HP|
+				-- 		|X|X|X|_|_|_|X|X|_|_|_|X|X|X|HP|HP|
 				elsif (pattern_num = "11") then
 					pattern_count <= pattern_count - 1;
 					if (random_fixed = '0') then
 						case pattern_count is
 							-- Reverse and normal arrow
-							when "11110" =>
+							when "01111" =>
 								reverse_arrow_pixel(0) <= '1';
 								arrow_pixel(12) <= '1';
-							when "11100"  =>
-								reverse_arrow_pixel(16) <= '1';
-								arrow_pixel(29) <= '1';
-
+							when "01101"  =>
+								first_warning(22) <= '1';
+								first_warning(23) <= '1';
+								
+							when "00111"  =>
+								first_warning(16) <= '1';
+								first_warning(29) <= '1';
+								
+							when "00110"  =>
+								first_warning(17) <= '1';
+								first_warning(28) <= '1';
+					
+							when "00101"  =>
+								first_warning(18) <= '1';
+								first_warning(27) <= '1';
+								
 							-- Delay of 0.5s ~ 1.25s
 							when "00000" =>
 								pattern_num <= "00";
-								pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
 							when others =>
 								NULL;
 						end case;
 					else 
-					-- 		|_|_|_|_|_|<|>|_|_|_|_|_|_|B|HP|HP|
-					-- 		|_|_|_|_|_|_|_|_|_|<|>|_|_|_|HP|HP|
+				-- 		|X|X|X|_|_|_|X|X|_|_|_|X|X|B|HP|HP|
+				-- 		|>|_|_|_|_|_|_|_|_|_|_|_|_|<|HP|HP|
 						case pattern_count is
-							when "11110" =>
-								reverse_arrow_pixel(5) <= '1';
-								arrow_pixel(6) <= '1';
-							when "11100" =>
-								reverse_arrow_pixel(25) <= '1';
-								arrow_pixel(26) <= '1';
-
+							when "01111" =>
+								reverse_arrow_pixel(0) <= '1';
+								arrow_pixel(12) <= '1';
+							when "01101"  =>
+								first_warning(6) <= '1';
+								first_warning(7) <= '1';
+								
+							when "00111"  => 
+								first_warning(0) <= '1';
+								first_warning(12) <= '1';
+								
+							when "00110"  =>
+								first_warning(1) <= '1';
+								first_warning(11) <= '1';
+					
+							when "00101"  =>
+								first_warning(2) <= '1';
+	
 							-- Delay of 0.5s ~ 1.25s
 							when "00000" =>
 								pattern_num <= "00";
-								pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
 							when others =>
 								NULL;
 						end case;
