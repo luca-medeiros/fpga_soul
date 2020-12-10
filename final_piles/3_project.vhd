@@ -87,7 +87,7 @@ architecture Behavioral of project is
           stage: in std_logic_vector(1 downto 0);
 			 score: out std_logic_vector(15 downto 0));
    end component;
--- ³»ºÎ½ÅÈ£
+-- ë‚´ë¶€ì‹ í˜¸
 signal data_out_reg, w_enable_reg : std_logic; 
 signal addr_reg : std_logic_vector(4 downto 0); 
 signal data_reg : std_logic_vector(7 downto 0);
@@ -106,7 +106,7 @@ signal score: std_logic_vector(15 downto 0);
             SEG_D,SEG_E,SEG_F,SEG_G,SEG_DP,reattack_1,reattack_2,attack_1_trans,attack_2_trans,stage,score);
 end Behavioral;
 
-library IEEE; --LED °ª µµÃâ 
+library IEEE; --LED ê°’ ë„ì¶œ 
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -125,26 +125,26 @@ entity LCD_test is
 end LCD_test;
 
 architecture Behavioral of LCD_test is
---³»ºÎ½ÅÈ£
+--ë‚´ë¶€ì‹ í˜¸
 type reg is array( 0 to 31 ) of std_logic_vector( 7 downto 0 ); -- 2D array
 signal reg_file : reg;
 signal w_enable_reg : std_logic;
 signal lcd_cnt : std_logic_vector (8 downto 0);
-signal lcd_state : std_logic_vector (7 downto 0); --lcd_db¸¦ ¹Ş°í, clock¿¡ µû¶ó ÀÌµ¿
+signal lcd_state : std_logic_vector (7 downto 0); --lcd_dbë¥¼ ë°›ê³ , clockì— ë”°ë¼ ì´ë™
 signal lcd_nstate : std_logic_vector (7 downto 0);-- lcd_state next state
-signal lcd_db : std_logic_vector (7 downto 0);-- outputÀü´ŞÇÏ´Â ³»ºÎ½ÅÈ£
-signal stage_cnt: std_logic_vector (1 downto 0);-- stageº¯È­¸¦ ±â·ÏÇÏ´Â ³»ºÎ½ÅÈ£
+signal lcd_db : std_logic_vector (7 downto 0);-- outputì „ë‹¬í•˜ëŠ” ë‚´ë¶€ì‹ í˜¸
+signal stage_cnt: std_logic_vector (1 downto 0);-- stageë³€í™”ë¥¼ ê¸°ë¡í•˜ëŠ” ë‚´ë¶€ì‹ í˜¸
 
 signal load_100k : std_logic;
-signal clk_100k : std_logic;-- ³»ºÎ clock 100kHz 
+signal clk_100k : std_logic;-- ë‚´ë¶€ clock 100kHz 
 signal cnt_100k : std_logic_vector (7 downto 0);
 signal load_50 : std_logic;
-signal clk_50 : std_logic;-- ³»ºÎ clock 50Hz
+signal clk_50 : std_logic;-- ë‚´ë¶€ clock 50Hz
 signal cnt_50 : std_logic_vector (11 downto 0);
 
 begin
    process(FPGA_RSTB,CLK,load_100k,cnt_100k) 
-   --4MHzÀ¸·Î ³»ºÎ clock 100kHz »ı¼º
+   --4MHzìœ¼ë¡œ ë‚´ë¶€ clock 100kHz ìƒì„±
       Begin
          if FPGA_RSTB = '0' then
             cnt_100k <= (others => '0');
@@ -160,10 +160,10 @@ begin
    end process;
    
 load_100k <= '1' when (cnt_100k = X"13") else '0'; -- 19
---±âÁ¸ clock periodÀÇ 40¹è, ÀÌ¸¦ ¼¼´Â º¯¼ö
+--ê¸°ì¡´ clock periodì˜ 40ë°°, ì´ë¥¼ ì„¸ëŠ” ë³€ìˆ˜
 
    process(FPGA_RSTB,clk_100k,load_50,cnt_50) 
-   --100kHz À¸·Î 78.25Hz
+   --100kHz ìœ¼ë¡œ 78.25Hz
       Begin
          if FPGA_RSTB = '0' then
             cnt_50 <= (others => '0');
@@ -181,7 +181,7 @@ load_100k <= '1' when (cnt_100k = X"13") else '0'; -- 19
 load_50 <= '1' when (cnt_50 = X"40") else '0'; --64
 
    process(FPGA_RSTB, CLK) 
-   --clockÀÇ rising_edge¿¡ state º¯È­
+   --clockì˜ rising_edgeì— state ë³€í™”
       Begin
          if FPGA_RSTB = '0' then
             lcd_state <= (others =>'0');
@@ -189,19 +189,19 @@ load_50 <= '1' when (cnt_50 = X"40") else '0'; --64
             lcd_state <= lcd_nstate;
          end if;
    end process;
---LCD ÀÇ Ãâ·Â ¿©ºÎ ÆÇ´Ü
+--LCD ì˜ ì¶œë ¥ ì—¬ë¶€ íŒë‹¨
 w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
 
    process(FPGA_RSTB, CLK)
       Begin
          if FPGA_RSTB = '0' then -- reset = '0' ?
             for i in 0 to 31 loop
-               reg_file(i) <= X"20"; -- LED ºóÄ­À¸·Î ÃÊ±âÈ­ X"20":ºóÄ­ÀúÀå
+               reg_file(i) <= X"20"; -- LED ë¹ˆì¹¸ìœ¼ë¡œ ì´ˆê¸°í™” X"20":ë¹ˆì¹¸ì €ì¥
             end loop;
          elsif CLK'event and CLK='1' then
-         -- LEDdata ¸¦ CLK ¸¶´Ù Àü´Ş
-            if w_enable_reg ='1' and data_out ='1' then--LCDÃâ·ÂÇÒ¶§
-               reg_file(conv_integer(addr)) <= data;--reg_file ¿¡ ÀúÀå
+         -- LEDdata ë¥¼ CLK ë§ˆë‹¤ ì „ë‹¬
+            if w_enable_reg ='1' and data_out ='1' then--LCDì¶œë ¥í• ë•Œ
+               reg_file(conv_integer(addr)) <= data;--reg_file ì— ì €ì¥
             end if;
          end if;
    end process;
@@ -210,7 +210,7 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
       Begin
          if FPGA_RSTB='0' then
             lcd_nstate <= X"00";
-            stage_cnt <= "00"; --stage ÃÊ±âº¯¼ö,ÀÌÈÄ stageº¯È­¿Í ºñ±³
+            stage_cnt <= "00"; --stage ì´ˆê¸°ë³€ìˆ˜,ì´í›„ stageë³€í™”ì™€ ë¹„êµ
          else
             case lcd_state is
                when X"00" => lcd_db <= "00000011" ; -- Return home
@@ -227,7 +227,7 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
                   lcd_nstate <= X"06" ;
                when X"06" => lcd_db <= "01000000" ; --set CGRAM(X"00") player1
                   lcd_nstate <= X"07";
-                  stage_cnt<= stage;--ÃÊ±â¿¡¸¸ ½ÇÇà, stageº¯È­½Ã stage=/ stage_cnt
+                  stage_cnt<= stage;--ì´ˆê¸°ì—ë§Œ ì‹¤í–‰, stageë³€í™”ì‹œ stage=/ stage_cnt
                when X"07" => lcd_db <= "00001110" ; --0***0
                   lcd_nstate <= X"08";
                when X"08" => lcd_db <= "00001010" ; --0*0*0
@@ -488,7 +488,7 @@ w_enable_reg <= '0' when lcd_state <= X"4E" else '1';
                   if (stage_cnt = stage) then 
                      lcd_nstate <=X"4E"; --goto (1,1) of LCD
                   else
-                     lcd_nstate <= X"06"; --Cgram set(stage°¡ ¹Ù²î¾î monster cgram set)
+                     lcd_nstate <= X"06"; --Cgram set(stageê°€ ë°”ë€Œì–´ monster cgram set)
                   end if;
                when others => lcd_db <= (others => '0') ;
             end case;
@@ -501,7 +501,7 @@ LCD_A(0) <= '0' when (lcd_state=X"5F" or lcd_state=X"4E" or lcd_state<=X"06"
                or lcd_state=X"2A" or lcd_state=X"33" or lcd_state=X"3C"
                or lcd_state=X"45")
                else '1';
--- LCD_state ¿¡µû¸¥ LCD_A ±¸ºĞ
+-- LCD_state ì—ë”°ë¥¸ LCD_A êµ¬ë¶„
                
 LCD_EN <= clk_50; --LCD_EN <= '0' when w_enable_reg='0' else clk_100;
 LCD_D <= lcd_db; -- LCD display data
@@ -510,7 +510,7 @@ end Behavioral;
 
 
 
-library IEEE; -- ÀÔ·Â°ª »ı¼º ¹× ¿¬»êºÎºĞ
+library IEEE; -- ì…ë ¥ê°’ ìƒì„± ë° ì—°ì‚°ë¶€ë¶„
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -536,89 +536,92 @@ entity data_gen is
          attack_1_trans : in std_logic;
          attack_2_trans : in std_logic;
          invin : in std_logic;
-			score: in std_logic_vector(15 downto 0));
+	 score: in std_logic_vector(15 downto 0));
 end data_gen;
 architecture Behavioral of data_gen is
---³»ºÎ½ÅÈ£ Á¤ÀÇ
-   signal patern_clk : std_logic;
-   signal random_count : std_logic_vector (3 downto 0);
-   signal stage_data : std_logic_vector (1 downto 0);
-   signal stage_data_saved : std_logic_vector (1 downto 0);
-   signal pattern_num : std_logic_vector (1 downto 0);
-   signal pattern_count : std_logic_vector (4 downto 0);
-   signal cnt : std_logic_vector(4 downto 0);
-	signal hitted_cnt : std_logic_vector(4 downto 0);
-	signal hitted_cnt_ten : std_logic_vector(4 downto 0);
+--ë‚´ë¶€ì‹ í˜¸ ì •ì˜
+	signal patern_clk : std_logic; -- íŒ¨í„´ ë³€í™” ì£¼ê¸°ë¥¼ ë‚˜íƒ€ë‚´ëŠ” clock	
+	signal random_count : std_logic_vector (3 downto 0); -- ëœë¤ ì‹ í˜¸ êµ¬í˜„ì„ ìœ„í•œ signal
+	signal stage_data : std_logic_vector (1 downto 0); -- stage ë³€í™”ì‹œ ì´ ê°’ì´ ë³€ê²½
+	signal stage_data_saved : std_logic_vector (1 downto 0); -- stage ë³€í™” ê°ì§€ë¥¼ ìœ„í•´ ì €ì¥í•˜ëŠ” data
+	signal pattern_num : std_logic_vector (1 downto 0); -- boss íŒ¨í„´ ë²ˆí˜¸ë¥¼ ë‚˜íƒ€ë‚´ëŠ” signal
+	signal pattern_count : std_logic_vector (4 downto 0); -- boss íŒ¨í„´ì˜ ì§„í–‰ ê²½ê³¼ë¥¼ ë‚˜íƒ€ë‚´ëŠ” signal
+	signal cnt : std_logic_vector(4 downto 0); -- reg file ì¶œë ¥ì„ ìœ„í•œ address ë³€í™”ë¥¼ ì €ì¥
+	signal hitted_cnt : std_logic_vector(4 downto 0); -- ì „ì²´ ê²Œì„ì—ì„œ í”¼ê²©ëœ íšŸìˆ˜ë¥¼ ì €ì¥
+	signal hitted_cnt_ten : std_logic_vector(4 downto 0); -- ì „ì²´ ê²Œì„ì—ì„œ í”¼ê²©ëœ íšŸìˆ˜ë¥¼ ì €ì¥(10ì˜ ìë¦¬)
 
-   type reg is array( 0 to 31 ) of std_logic_vector( 7 downto 0 ); -- 2D array
-   signal reg_file : reg;
-   signal clear_reg : reg;
+	type reg is array( 0 to 31 ) of std_logic_vector( 7 downto 0 ); -- 2D array
+	signal reg_file : reg;
+	signal clear_reg : reg;
    
-   type pixel_data is array( 0 to 31 ) of std_logic; -- 2D array
-   signal arrow_pixel : pixel_data;
-	signal reverse_arrow_pixel : pixel_data;
-   signal first_warning : pixel_data;
-   signal second_warning : pixel_data;
-   signal pixel_explosion : pixel_data;
-   signal hit_on : pixel_data;
+	type pixel_data is array( 0 to 31 ) of std_logic; -- 2D array
+	signal arrow_pixel : pixel_data; -- í™”ì‚´ íŒ¨í„´ìš© ì‹ í˜¸
+	signal reverse_arrow_pixel : pixel_data; -- ë°˜ëŒ€ ë°©í–¥ í™”ì‚´ íŒ¨í„´ìš© ì‹ í˜¸ 2
+	signal first_warning : pixel_data; -- í”½ì…€ í­ë°œ ê²½ê³  1 ìš© ì‹ í˜¸
+	signal second_warning : pixel_data; -- í”½ì…€ í­ë°œ ê²½ê³  2 ìš© ì‹ í˜¸
+	signal pixel_explosion : pixel_data; -- í”½ì…€ í­ë°œìš© ì‹ í˜¸
+	signal hit_on : pixel_data; -- í”¼ê²© íŒì •ìš© ì‹ í˜¸
 
-   signal Mhp : integer range 8 downto 0;
-   signal Uhp : integer range 4 downto 0;
+	signal Mhp : integer range 8 downto 0; -- ë³´ìŠ¤ HP ì €ì¥
+	signal Uhp : integer range 4 downto 0; -- í”Œë ˆì´ì–´ HP ì €ì¥
    
-   signal p1_curSt : integer range 31 downto 0;
-   signal p2_curSt : integer range 31 downto 0;
-   signal p1_preSt : integer range 31 downto 0;
-   signal p2_preSt : integer range 31 downto 0;
-	signal position_arrow : integer;
+	signal p1_curSt : integer range 31 downto 0; -- í”Œë ˆì´ì–´ 1 í˜„ì¬ ìœ„ì¹˜
+	signal p2_curSt : integer range 31 downto 0; -- í”Œë ˆì´ì–´ 2 í˜„ì¬ ìœ„ì¹˜
+	signal p1_preSt : integer range 31 downto 0; -- í”Œë ˆì´ì–´ 1 ì´ì „ ìœ„ì¹˜
+	signal p2_preSt : integer range 31 downto 0; -- í”Œë ˆì´ì–´ 2 ì´ì „ ìœ„ì¹˜
+	signal position_arrow : integer; -- ë³´ìŠ¤ 3 íŒ¨í„´ ìƒì„±ìš© signal
    
-   signal special : std_logic;
-   
-   signal game_over : std_logic;
-   signal move_clk:std_logic;
-   signal move_admit_1 : std_logic;
-   signal move_admit_2 : std_logic;
-   signal shield_admit : std_logic;
-	signal boss_dead : std_logic;
-	signal game_clear : std_logic;
-	signal score_cnt: std_logic_vector(15 downto 0);
+	signal special : std_logic; -- í”Œë ˆì´ì–´ê°€ ê²¹ì¹œ ìƒíƒœ íŒë³„ìš© signal
+   	signal game_over : std_logic; -- game over ìƒíƒœ íŒë³„ìš© signal
+	signal move_clk:std_logic; -- ì›€ì§ì„ì„ í—ˆìš©í•˜ëŠ” ìƒíƒœë¥¼ íŒë³„í•˜ê¸° ìœ„í•œ clock
+	signal move_admit_1 : std_logic; -- í”Œë ˆì´ì–´ 1ì´ ì›€ì§ì¼ ìˆ˜ ìˆëŠ” ìƒíƒœì¸ì§€ ë‚˜íƒ€ëƒ„
+	signal move_admit_2 : std_logic; -- í”Œë ˆì´ì–´ 2ê°€ ì›€ì§ì¼ ìˆ˜ ì‡ëŠ” ìƒíƒœì¸ì§€ ë‚˜íƒ€ëƒ„
+	signal shield_admit : std_logic; -- í˜„ì¬ ë¬´ì  ìƒíƒœì¸ì§€ ì•„ë‹Œì§€ ë‚˜íƒ€ëƒ„
+	signal boss_dead : std_logic; -- ë³´ìŠ¤ê°€ ì£½ì—ˆëŠ”ì§€ ì•„ë‹Œì§€ ë‚˜íƒ€ëƒ„
+	signal game_clear : std_logic; -- ê²Œì„ì„ ëê¹Œì§€ ê¹»ëŠ”ì§€ ì•„ë‹Œì§€ ë‚˜íƒ€ëƒ„
+	signal score_cnt: std_logic_vector(15 downto 0); -- ìµœì¢… score ì¶œë ¥
 	
    
 begin
-   --4HZpatern_clock±¸Çö, 0.25ÃÊ ÇØ´ç
+   --2.67HZ patern_clockêµ¬í˜„, 0.375ì´ˆ í•´ë‹¹
    process(FPGA_RSTB,clk)
-   --4HZ¸¦ ±¸ÇöÇÏ±âÀ§ÇÑ clk º¯¼ö count_clk ¼±¾ğ
-      variable patern_clk_cnt : integer range 0 to 500000;
+      --2.67HZë¥¼ êµ¬í˜„í•˜ê¸°ìœ„í•œ clk ë³€ìˆ˜ count_clk ì„ ì–¸
+      variable patern_clk_cnt : integer range 0 to 750000;
    begin
       if(FPGA_RSTB = '0')then
          patern_clk <= '1';
          patern_clk_cnt := 0;
       elsif(clk'event and clk='1')then
-      --¹İÁÖ±â·Î clk °ª 500000 ¼¼°í 0>1,1>0·Î ¹Ù²Ş
-         if(patern_clk_cnt = 500000)then
+         --ë°˜ì£¼ê¸°ë¡œ clk ê°’ 750000 ì„¸ê³  0>1,1>0ë¡œ ë°”ê¿ˆ
+         if(patern_clk_cnt = 750000)then
             patern_clk_cnt := 0;
             patern_clk <= not patern_clk;
          else
-         --500000º¸´Ù ÀÛÀ¸¸é 1 Áõ°¡
+            --750000ë³´ë‹¤ ì‘ìœ¼ë©´ 1 ì¦ê°€
             patern_clk_cnt := patern_clk_cnt +1;
          end if;
       end if;
    end process;   
 	
+	--ëœë¤ êµ¬í˜„ì„ ìœ„í•œ process	      
 	process(FPGA_RSTB,clk)
       variable random_cnt : integer range 0 to 7;
-
    begin
       if(FPGA_RSTB = '0')then
          random_count <= "0000";
          random_cnt := 0;
       elsif(clk'event and clk='1')then
+	      --ëœë¤ ì¹´ìš´íŠ¸ê°€ 7ì´ë©´ 0ìœ¼ë¡œ
          if(random_cnt = 7)then
             random_cnt := 0;
-				if (random_count = "1111") then
-					random_count <= "0000";
+		--ëœë¤ ìš© signalì´ ìµœëŒ€ì¹˜ë©´ 0000ìœ¼ë¡œ
+	 if (random_count = "1111") then
+	 random_count <= "0000";
+				--ëœë¤ ìš© signalì´ ìµœëŒ€ì¹˜ê°€ ì•„ë‹ˆë¼ë©´ 1 ì¦ê°€
 				else
 					random_count <= random_count + 1;
 				end if;
+	--ëœë¤ ì¹´ìš´íŠ¸ê°€ ìµœëŒ€ì¹˜ê°€ ì•„ë‹ˆë¼ë©´ 1 ì¦ê°€
          else
             random_cnt := random_cnt +1;
          end if;
@@ -627,10 +630,10 @@ begin
 
 
 
-   --¸Å pattern clock(0.25ÃÊ)¸¶´Ù actionÀ» Á¤ÀÇ
+   --ë§¤ pattern clock(0.375ì´ˆ)ë§ˆë‹¤ actionì„ ì •ì˜
    process(FPGA_RSTB,patern_clk)
-      variable pattern_select : std_logic_vector (1 downto 0);
-		variable pattern_previous : std_logic_vector (1 downto 0);
+      variable pattern_select : std_logic_vector (1 downto 0); -- íŒ¨í„´ ì„ íƒì— ì‚¬ìš©í•˜ëŠ” ì„ì‹œ ë³€ìˆ˜
+		variable pattern_previous : std_logic_vector (1 downto 0); -- ë°”ë¡œ ì§ì „ì— ì‚¬ìš©í•œ íŒ¨í„´ì„ ì €ì¥í•˜ëŠ” ë³€ìˆ˜
       variable random_fixed : std_logic;
 
    begin
@@ -652,49 +655,49 @@ begin
       elsif(patern_clk'event and patern_clk='1')then
 			
          if (stage_data_saved /= stage_data) then
-             --º¸½º º¯°æµÊ -> ´ë±âÆĞÅÏ °­Á¦ ÀüÈ¯ ¹× 1.75ÃÊ ~ 2.5ÃÊ ´ë±â
+             --ë³´ìŠ¤ ë³€ê²½ë¨ -> ëŒ€ê¸°íŒ¨í„´ ê°•ì œ ì „í™˜ ë° ëœë¤ì— ë”°ë¥¸ ì„ì˜ ì‹œê°„ ëŒ€ê¸°
             pattern_num <= "00";
             pattern_count <= "00110" + ("000" & random_count(1 downto 0));
             stage_data_saved <= stage_data;
          end if;
          for i in 0 to 31 loop
-            --È­»ì : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ °¢ ¿­ÀÇ ¸¶Áö¸· Ä­-¼Ò¸ê, ±× ¿Ü-ÇÑÄ­ ÁÂÃøÀ¸·Î ÀÌµ¿.
+            --í™”ì‚´ : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ ê° ì—´ì˜ ë§ˆì§€ë§‰ ì¹¸-ì†Œë©¸, ê·¸ ì™¸-í•œì¹¸ ì¢Œì¸¡ìœ¼ë¡œ ì´ë™.
             if (arrow_pixel(i) = '1') then
                arrow_pixel(i) <='0';
                if ((i /= 0) and (i /= 16)) then
                   arrow_pixel(i - 1) <= '1';
                end if;
             end if;
-				-- Same logic as arrow but reverse direction Left -> Right
+				-- ì—­ë°©í–¥ í™”ì‚´: í™”ì‚´ê³¼ ê¸°ë³¸ì ìœ¼ë¡œ ê°™ìœ¼ë‚˜ ì´ë™ ë°©í–¥ì´ ìš°ì¸¡
 				if (reverse_arrow_pixel(i) = '1') then
                reverse_arrow_pixel(i) <= '0';
                if ((i /= 15) and (i /= 31)) then
                   reverse_arrow_pixel(i + 1) <= '1';
                end if;
             end if;
-            --ÇÈ¼¿ Æø¹ß : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ ¼Ò¸ê
+            --í”½ì…€ í­ë°œ : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ ì†Œë©¸
             if (pixel_explosion(i) = '1')then
                pixel_explosion(i) <= '0';
             end if;
-            --°æ°í_2 : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ ÇÈ¼¿ Æø¹ß À¯¹ß   
+            --ê²½ê³ _2 : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ í”½ì…€ í­ë°œ ìœ ë°œ   
             if (second_warning(i) = '1')then
                second_warning(i) <= '0';
                pixel_explosion(i) <= '1';
             end if;
-            --°æ°í_1 : ´ÙÀ½ ÆĞÅÏ Å¬¶ô¿¡¼­ °æ°í_2 À¯¹ß(ÇÃ·¹ÀÌ¾î ´«¿¡´Â º¯È­ ¾øÀ½.)
+            --ê²½ê³ _1 : ë‹¤ìŒ íŒ¨í„´ í´ë½ì—ì„œ ê²½ê³ _2 ìœ ë°œ(í”Œë ˆì´ì–´ ëˆˆì—ëŠ” ë³€í™” ì—†ìŒ.)
             if (first_warning(i) = '1')then
                first_warning(i) <= '0';
                second_warning(i) <= '1';
             end if;
          end loop;
-         --º¸½º 1 Çàµ¿ Á¤ÀÇ
+         --ë³´ìŠ¤ 1 í–‰ë™ ì •ì˜
          if (stage_data = "01") then
-            --´ë±â ÆĞÅÏ
+            --ëŒ€ê¸° íŒ¨í„´
             if (pattern_num = "00") then
-               --pattern_count°¡ 0ÀÌ µÉ ¶§ ±îÁö 1¾¿ °¨¼Ò½ÃÅ°¸ç ´ë±â
+               --pattern_countê°€ 0ì´ ë  ë•Œ ê¹Œì§€ 1ì”© ê°ì†Œì‹œí‚¤ë©° ëŒ€ê¸°
                if (pattern_count /= "00000") then
                   pattern_count <= pattern_count - 1;
-               --pattern_count°¡ 0ÀÌ µÉ ½Ã ³­¼ö¸¦ ÀÌ¿ëÇÑ ÀÓÀÇÀÇ ÆĞÅÏ ºÎ¿© (00 Á¦¿Ü)
+               --pattern_countê°€ 0ì´ ë  ì‹œ ë‚œìˆ˜ë¥¼ ì´ìš©í•œ ì„ì˜ì˜ íŒ¨í„´ ë¶€ì—¬ (00 ì œì™¸)
                else
                   if (random_count (1 downto 0) = "00") then
                      if (random_count (2 downto 1) = "00") then
@@ -709,13 +712,16 @@ begin
                   else
                      pattern_select := random_count (1 downto 0);
                   end if;
+			  --random_fixed : 0 or 1 
                   random_fixed := random_count(3);
+		    				-- ëœë¤ìœ¼ë¡œ ì„ íƒëœ íŒ¨í„´ì´ ë°”ë¡œ ì§ì „ íŒ¨í„´ê³¼ ë™ì¼í•  ê²½ìš° : ê·¸ ë‹¤ìŒ ë²ˆí˜¸ íŒ¨í„´ìœ¼ë¡œ ë³€ê²½
 						if (pattern_select = pattern_previous) then
 							if (pattern_select = "11") then
 								pattern_select := "01";
 							end if;
 							pattern_select := pattern_select + 1;
 						end if;
+						--ì„ íƒëœ íŒ¨í„´ì— ë”°ë¼ ì˜¬ë°”ë¥¸ íŒ¨í„´ ì‹¤í–‰ì‹œê°„ ë¶€ì—¬ ë° ì‹¤í–‰ íŒ¨í„´ì„ ì´ì „ íŒ¨í„´ê°’ìœ¼ë¡œ ì €ì¥
                   case pattern_select is
                      when "01" =>
                         pattern_num <= "01";
@@ -734,8 +740,8 @@ begin
                         pattern_count <= "00001";
                   end case;
                end if;
-            --ÆĞÅÏ 1 : 1ÁÙ È­»ì x 3 -> 2ÁÙ È­»ì x 3 -> 1ÁÙ È­»ì  x 3
-            --      or 2ÁÙ È­»ì x 3 -> 1ÁÙ È­»ì x 3 -> 2ÁÙ È­»ì  x 3
+            --íŒ¨í„´ 1 : 1ì¤„ í™”ì‚´ x 3 -> 2ì¤„ í™”ì‚´ x 3 -> 1ì¤„ í™”ì‚´  x 3
+            --      or 2ì¤„ í™”ì‚´ x 3 -> 1ì¤„ í™”ì‚´ x 3 -> 2ì¤„ í™”ì‚´  x 3 ë‘˜ì¤‘ ë­ê°€ ë‚˜ì˜¬ì§€ëŠ” random_fixedê°€ ê²°ì •
             elsif (pattern_num = "01") then
                pattern_count <= pattern_count - 1;
                if (random_fixed = '0') then
@@ -758,10 +764,10 @@ begin
                         arrow_pixel(12) <= '1';
                      when "00010" =>
                         arrow_pixel(12) <= '1';
-                     --Ã¹¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+                     --ì²«ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. ì„ì˜ì˜ ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
                      when "00000" =>
                         pattern_num <= "00";
-                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+                        pattern_count <= "00100" + ("000" & random_count(1 downto 0));
                      when others =>
                         NULL;
                   end case;
@@ -785,16 +791,17 @@ begin
                         arrow_pixel(29) <= '1';
                      when "00010" =>
                         arrow_pixel(29) <= '1';
-                     --Ã¹¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+                     --ì²«ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. ì„ì˜ì˜ ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
                      when "00000" =>
                         pattern_num <= "00";
-                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+                        pattern_count <= "00100" + ("000" & random_count(1 downto 0));
                      when others =>
                         NULL;
                   end case;
                end if;
 
-            --ÆĞÅÏ 2 : »ó´Ü -> 4 ÆĞÅÏÅ¬¶ô¸¶´Ù »ó´Ü -> È­»ì ¹ß»ç/ ÇÏ´Ü -> ÀüÃ¼°ø°İ or »ó´Ü -> 4ÆĞÅÏÅ¬¶ô¸¶´Ù ÀüÃ¼°ø°İ / ÇÏ´Ü -> È­»ì ¹ß»ç 
+            --íŒ¨í„´ 2 : ìƒë‹¨ -> 4 íŒ¨í„´í´ë½ë§ˆë‹¤ ìƒë‹¨ -> í™”ì‚´ ë°œì‚¬/ í•˜ë‹¨ -> ì „ì²´ê³µê²©
+            --ìƒë‹¨ -> 4íŒ¨í„´í´ë½ë§ˆë‹¤ ì „ì²´ê³µê²© / í•˜ë‹¨ -> í™”ì‚´ ë°œì‚¬ ë‘˜ì¤‘ ë­ê°€ ë‚˜ì˜¬ì§€ëŠ” random_fixedê°€ ê²°ì •
             elsif (pattern_num = "10") then
                pattern_count <= pattern_count - 1;
                if (random_fixed = '0') then
@@ -847,10 +854,10 @@ begin
                         first_warning(27) <= '1';
                         first_warning(28) <= '1';
                         first_warning(29) <= '1';
-                     --µÎ¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+                     --ë‘ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. ì„ì˜ì˜ ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
                      when "00000" =>
                         pattern_num <= "00";
-                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+                        pattern_count <= "00100" + ("000" & random_count(1 downto 0));
                      when others =>
                         NULL;
                   end case;
@@ -901,15 +908,15 @@ begin
                         first_warning(10) <= '1';
                         first_warning(11) <= '1';
                         first_warning(12) <= '1';
-                     --µÎ¹øÂ° ÆĞÅÏ Á¾·á. (0.5ÃÊ ~ 1.25ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+                     --ë‘ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. ì„ì˜ì˜ ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
                      when "00000" =>
                         pattern_num <= "00";
-                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+                        pattern_count <= "00100" + ("000" & random_count(1 downto 0));
                      when others =>
                         NULL;
                   end case;
                end if;
-            -- ÆĞÅÏ 3 : 2ÆĞÅÏ Å¬¶ô¸¶´Ù, ¼¼·Î¿­ ÇÑÁÙ °ø°İ ¹× ÀüÁø. 8ÆĞÅÏ Å¬¶ô¸¶´Ù ¹İº¹ÇÏ¿© 5È¸ ÁøÇà
+            -- íŒ¨í„´ 3 : 2íŒ¨í„´ í´ë½ë§ˆë‹¤, ì„¸ë¡œì—´ í•œì¤„ ê³µê²© ë° ì „ì§„. 8íŒ¨í„´ í´ë½ë§ˆë‹¤ ë°˜ë³µí•˜ì—¬ 5íšŒ ì§„í–‰
             elsif (pattern_num = "11") then
                pattern_count <= pattern_count - 1;
                case pattern_count is
@@ -987,14 +994,249 @@ begin
                      first_warning(24) <= '1';
                      first_warning(12) <= '1';   
                      first_warning(28) <= '1';                     
-                  --¼¼¹øÂ° ÆĞÅÏ Á¾·á. (1ÃÊ ~ 1.5ÃÊ) ´ë±â½Ã°£À» °®´Â ´ë±â ÆĞÅÏÀ¸·Î ³Ñ¾î°¨
+                  --ì„¸ë²ˆì§¸ íŒ¨í„´ ì¢…ë£Œ. ì„ì˜ì˜ ëŒ€ê¸°ì‹œê°„ì„ ê°–ëŠ” ëŒ€ê¸° íŒ¨í„´ìœ¼ë¡œ ë„˜ì–´ê°
                   when "00000" =>
                      pattern_num <= "00";
-                     pattern_count <= "00100" + ("000" & random_count(1 downto 0));
+                     pattern_count <= "00101" + ("000" & random_count(1 downto 0));
                   when others =>
                      NULL;
                end case;
             end if;
+--------------- STAGE 2 ----------------------------
+         elsif (stage_data = "10") then
+				if (pattern_num = "00") then
+               --pattern_countê°€ 0ì´ ë  ë•Œ ê¹Œì§€ 1ì”© ê°ì†Œì‹œí‚¤ë©° ëŒ€ê¸°
+               if (pattern_count /= "00000") then
+                  pattern_count <= pattern_count - 1;
+               --pattern_countê°€ 0ì´ ë  ì‹œ ë‚œìˆ˜ë¥¼ ì´ìš©í•œ ì„ì˜ì˜ íŒ¨í„´ ë¶€ì—¬ (00 ì œì™¸)
+               else
+                  if (random_count (1 downto 0) = "00") then
+                     if (random_count (2 downto 1) = "00") then
+                        if (random_count (3 downto 2) = "00") then
+                           pattern_select := "01";
+                        else
+                           pattern_select := random_count (3 downto 2);
+                        end if;
+                     else
+                        pattern_select := random_count (2 downto 1);
+                     end if;
+                  else
+                     pattern_select := random_count (1 downto 0);
+                  end if;
+                  random_fixed := random_count(3);
+						if (pattern_select = pattern_previous) then
+							if (pattern_select = "11") then
+								pattern_select := "01";
+							end if;
+							pattern_select := pattern_select + 1;
+						end if;
+                  case pattern_select is
+                     when "01" =>
+                        pattern_num <= "01";
+                        pattern_count <= "10011";
+								pattern_previous := "01";
+                     when "10" =>
+                        pattern_num <= "10";
+                        pattern_count <= "11001";
+								pattern_previous := "10";
+                     when "11" =>
+                        pattern_num <= "11";
+                        pattern_count <= "10000";
+								pattern_previous := "11";
+                     when others =>
+                        pattern_num <= "00";
+                        pattern_count <= "00001";
+                  end case;
+               end if;
+            --Pattern 1-1 : |x|_|x|_|x|_|_|_|x|_|x|_|x|B|HP|HP|
+            --              |_|x|_|_|_|x|_|x|_|_|_|x|_|<|HP|HP|
+            elsif (pattern_num = "01") then
+               pattern_count <= pattern_count - 1;
+               if (random_fixed = '0') then
+                  case pattern_count is
+                     when "10010" | "01011"  | "01000" =>
+								arrow_pixel(29) <= '1';
+                        first_warning(0) <= '1';
+                        first_warning(2) <= '1';
+                        first_warning(4) <= '1';
+                        first_warning(8) <= '1';
+                        first_warning(10) <= '1';
+                        first_warning(12) <= '1';
+                        first_warning(17) <= '1';
+                        first_warning(21) <= '1';
+                        first_warning(23) <= '1';
+                        first_warning(27) <= '1';
+                        first_warning(29) <= '1';
+							when "00101" =>
+								reverse_arrow_pixel(16) <= '1';
+                     -- Delay of 1s ~ 1.75s
+                     when "00000" =>
+                        pattern_num <= "00";
+                        pattern_count <= "00010" + ("00" & random_count(2 downto 0));
+                     when others =>
+                        NULL;
+                  end case;
+                  
+            --Pattern 1-2 : |_|x|_|x|_|x|_|x|_|x|_|x|_|B|HP|HP|
+            --           	 |x|_|x|_|x|_|x|_|x|_|x|_|x|_|HP|HP|
+               else
+                  case pattern_count is
+                     when "10010" | "01011"  | "01000" =>
+								reverse_arrow_pixel(16) <= '1';
+                        first_warning(1) <= '1';
+                        first_warning(3) <= '1';
+                        first_warning(5) <= '1';
+                        first_warning(7) <= '1';
+                        first_warning(11) <= '1';
+                        first_warning(13) <= '1';
+                        first_warning(16) <= '1';
+                        first_warning(20) <= '1';
+                        first_warning(24) <= '1';
+                        first_warning(26) <= '1';
+                        first_warning(28) <= '1';
+
+
+                     -- Delay of 0.5s ~ 1.25s
+                     when "00000" =>
+                        pattern_num <= "00";
+                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+                     when others =>
+                        NULL;
+                  end case;
+               end if;
+               
+            -- íŒ¨í„´ 2 sine wave        |_|_|x|_|_|_|x|_|_|_|x|_|<|B|HP|HP|
+            -- with arrow top/bot     |x|_|_|_|x|_|_|_|x|_|_|_|x|<|HP|HP|
+            elsif (pattern_num = "10") then
+               pattern_count <= pattern_count - 1;
+               case pattern_count is
+                  when "11000" =>
+                     arrow_pixel(12) <= '1';
+                     first_warning(2) <= '1';
+                     first_warning(6) <= '1';
+                     first_warning(10) <= '1';
+                     first_warning(16) <= '1';
+                     first_warning(20) <= '1';
+                     first_warning(24) <= '1';
+                     first_warning(28) <= '1';
+                  when "10000" =>
+                     arrow_pixel(29) <= '1';
+                     first_warning(2) <= '1';
+                     first_warning(6) <= '1';
+                     first_warning(10) <= '1';
+                     first_warning(16) <= '1';
+                     first_warning(20) <= '1';
+                     first_warning(24) <= '1';
+                     first_warning(28) <= '1';
+                  when "01000" =>
+                     first_warning(2) <= '1';
+                     first_warning(6) <= '1';
+                     first_warning(10) <= '1';
+                     first_warning(16) <= '1';
+                     first_warning(20) <= '1';
+                     first_warning(24) <= '1';
+                     first_warning(28) <= '1';
+							
+						when "00111" =>
+                     first_warning(2) <= '1';
+                     first_warning(6) <= '1';
+                     first_warning(10) <= '1';
+                     first_warning(16) <= '1';
+                     first_warning(20) <= '1';
+                     first_warning(24) <= '1';
+                     first_warning(28) <= '1';
+							
+						when "00110" =>
+                     first_warning(2) <= '1';
+                     first_warning(6) <= '1';
+                     first_warning(10) <= '1';
+                     first_warning(16) <= '1';
+                     first_warning(20) <= '1';
+                     first_warning(24) <= '1';
+                     first_warning(28) <= '1';
+
+						when "00101" =>
+                     first_warning(2) <= '1';
+                     first_warning(6) <= '1';
+                     first_warning(10) <= '1';
+                     first_warning(16) <= '1';
+                     first_warning(20) <= '1';
+                     first_warning(24) <= '1';
+                     first_warning(28) <= '1';
+                     
+                  when "00000" =>
+                     pattern_num <= "00";
+                     pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+                  when others =>
+                     NULL;
+               end case;
+				-- Pattern 3 
+				-- 		|0|1|2|3|4|5|6|7|8|9|0|1|2|B|HP|HP|
+				-- 		|6|7|8|9|0|1|2|3|4|5|6|7|8|9|HP|HP|
+				-- 		|>|_|_|_|_|_|_|_|_|_|_|_|<|B|HP|HP|
+				-- 		|X|X|X|_|_|_|X|X|_|_|_|X|X|X|HP|HP|
+				elsif (pattern_num = "11") then
+					pattern_count <= pattern_count - 1;
+					if (random_fixed = '0') then
+						case pattern_count is
+							-- Reverse and normal arrow
+							when "01111" =>
+								reverse_arrow_pixel(0) <= '1';
+								arrow_pixel(12) <= '1';
+							when "01101"  =>
+								first_warning(22) <= '1';
+								first_warning(23) <= '1';
+								
+							when "00111"  =>
+								first_warning(16) <= '1';
+								first_warning(29) <= '1';
+								
+							when "00110"  =>
+								first_warning(17) <= '1';
+								first_warning(28) <= '1';
+					
+							when "00101"  =>
+								first_warning(18) <= '1';
+								first_warning(27) <= '1';
+								
+							-- Delay of 0.5s ~ 1.25s
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+					else 
+				-- 		|X|X|X|_|_|_|X|X|_|_|_|X|X|B|HP|HP|
+				-- 		|>|_|_|_|_|_|_|_|_|_|_|_|_|<|HP|HP|
+						case pattern_count is
+							when "01111" =>
+								reverse_arrow_pixel(0) <= '1';
+								arrow_pixel(12) <= '1';
+							when "01101"  =>
+								first_warning(6) <= '1';
+								first_warning(7) <= '1';
+								
+							when "00111"  => 
+								first_warning(0) <= '1';
+								first_warning(12) <= '1';
+								
+							when "00110"  =>
+								first_warning(1) <= '1';
+								first_warning(11) <= '1';
+					
+							when "00101"  =>
+								first_warning(2) <= '1';
+	
+							-- Delay of 0.5s ~ 1.25s
+							when "00000" =>
+								pattern_num <= "00";
+								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
+							when others =>
+								NULL;
+						end case;
+					end if;
+				end if;
 -------------------------- stage 3 ----------------------------------
 			elsif (stage_data = "11") then
             if (pattern_num = "00") then
@@ -1184,256 +1426,21 @@ begin
                end if;
 				end if;
 
---------------- STAGE 2 ----------------------------
-         elsif (stage_data = "10") then
-				if (pattern_num = "00") then
-               --pattern_count°¡ 0ÀÌ µÉ ¶§ ±îÁö 1¾¿ °¨¼Ò½ÃÅ°¸ç ´ë±â
-               if (pattern_count /= "00000") then
-                  pattern_count <= pattern_count - 1;
-               --pattern_count°¡ 0ÀÌ µÉ ½Ã ³­¼ö¸¦ ÀÌ¿ëÇÑ ÀÓÀÇÀÇ ÆĞÅÏ ºÎ¿© (00 Á¦¿Ü)
-               else
-                  if (random_count (1 downto 0) = "00") then
-                     if (random_count (2 downto 1) = "00") then
-                        if (random_count (3 downto 2) = "00") then
-                           pattern_select := "01";
-                        else
-                           pattern_select := random_count (3 downto 2);
-                        end if;
-                     else
-                        pattern_select := random_count (2 downto 1);
-                     end if;
-                  else
-                     pattern_select := random_count (1 downto 0);
-                  end if;
-                  random_fixed := random_count(3);
-						if (pattern_select = pattern_previous) then
-							if (pattern_select = "11") then
-								pattern_select := "01";
-							end if;
-							pattern_select := pattern_select + 1;
-						end if;
-                  case pattern_select is
-                     when "01" =>
-                        pattern_num <= "01";
-                        pattern_count <= "10011";
-								pattern_previous := "01";
-                     when "10" =>
-                        pattern_num <= "10";
-                        pattern_count <= "11001";
-								pattern_previous := "10";
-                     when "11" =>
-                        pattern_num <= "11";
-                        pattern_count <= "10000";
-								pattern_previous := "11";
-                     when others =>
-                        pattern_num <= "00";
-                        pattern_count <= "00001";
-                  end case;
-               end if;
-            --Pattern 1-1 : |x|_|x|_|x|_|_|_|x|_|x|_|x|B|HP|HP|
-            --              |_|x|_|_|_|x|_|x|_|_|_|x|_|<|HP|HP|
-            elsif (pattern_num = "01") then
-               pattern_count <= pattern_count - 1;
-               if (random_fixed = '0') then
-                  case pattern_count is
-                     when "10010" | "01011"  | "01000" =>
-								arrow_pixel(29) <= '1';
-                        first_warning(0) <= '1';
-                        first_warning(2) <= '1';
-                        first_warning(4) <= '1';
-                        first_warning(8) <= '1';
-                        first_warning(10) <= '1';
-                        first_warning(12) <= '1';
-                        first_warning(17) <= '1';
-                        first_warning(21) <= '1';
-                        first_warning(23) <= '1';
-                        first_warning(27) <= '1';
-                        first_warning(29) <= '1';
-							when "00101" =>
-								reverse_arrow_pixel(16) <= '1';
-                     -- Delay of 1s ~ 1.75s
-                     when "00000" =>
-                        pattern_num <= "00";
-                        pattern_count <= "00010" + ("00" & random_count(2 downto 0));
-                     when others =>
-                        NULL;
-                  end case;
-                  
-            --Pattern 1-2 : |_|x|_|x|_|x|_|x|_|x|_|x|_|B|HP|HP|
-            --           	 |x|_|x|_|x|_|x|_|x|_|x|_|x|_|HP|HP|
-               else
-                  case pattern_count is
-                     when "10010" | "01011"  | "01000" =>
-								reverse_arrow_pixel(16) <= '1';
-                        first_warning(1) <= '1';
-                        first_warning(3) <= '1';
-                        first_warning(5) <= '1';
-                        first_warning(7) <= '1';
-                        first_warning(11) <= '1';
-                        first_warning(13) <= '1';
-                        first_warning(16) <= '1';
-                        first_warning(20) <= '1';
-                        first_warning(24) <= '1';
-                        first_warning(26) <= '1';
-                        first_warning(28) <= '1';
-
-
-                     -- Delay of 0.5s ~ 1.25s
-                     when "00000" =>
-                        pattern_num <= "00";
-                        pattern_count <= "00010" + ("000" & random_count(1 downto 0));
-                     when others =>
-                        NULL;
-                  end case;
-               end if;
-               
-            -- ÆĞÅÏ 2 sine wave        |_|_|x|_|_|_|x|_|_|_|x|_|<|B|HP|HP|
-            -- with arrow top/bot     |x|_|_|_|x|_|_|_|x|_|_|_|x|<|HP|HP|
-            elsif (pattern_num = "10") then
-               pattern_count <= pattern_count - 1;
-               case pattern_count is
-                  when "11000" =>
-                     arrow_pixel(12) <= '1';
-                     first_warning(2) <= '1';
-                     first_warning(6) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(16) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(28) <= '1';
-                  when "10000" =>
-                     arrow_pixel(29) <= '1';
-                     first_warning(2) <= '1';
-                     first_warning(6) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(16) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(28) <= '1';
-                  when "01000" =>
-                     first_warning(2) <= '1';
-                     first_warning(6) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(16) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(28) <= '1';
-							
-						when "00111" =>
-                     first_warning(2) <= '1';
-                     first_warning(6) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(16) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(28) <= '1';
-							
-						when "00110" =>
-                     first_warning(2) <= '1';
-                     first_warning(6) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(16) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(28) <= '1';
-
-						when "00101" =>
-                     first_warning(2) <= '1';
-                     first_warning(6) <= '1';
-                     first_warning(10) <= '1';
-                     first_warning(16) <= '1';
-                     first_warning(20) <= '1';
-                     first_warning(24) <= '1';
-                     first_warning(28) <= '1';
-                     
-                  when "00000" =>
-                     pattern_num <= "00";
-                     pattern_count <= "00010" + ("000" & random_count(1 downto 0));
-                  when others =>
-                     NULL;
-               end case;
-				-- Pattern 3 
-				-- 		|0|1|2|3|4|5|6|7|8|9|0|1|2|B|HP|HP|
-				-- 		|6|7|8|9|0|1|2|3|4|5|6|7|8|9|HP|HP|
-				-- 		|>|_|_|_|_|_|_|_|_|_|_|_|<|B|HP|HP|
-				-- 		|X|X|X|_|_|_|X|X|_|_|_|X|X|X|HP|HP|
-				elsif (pattern_num = "11") then
-					pattern_count <= pattern_count - 1;
-					if (random_fixed = '0') then
-						case pattern_count is
-							-- Reverse and normal arrow
-							when "01111" =>
-								reverse_arrow_pixel(0) <= '1';
-								arrow_pixel(12) <= '1';
-							when "01101"  =>
-								first_warning(22) <= '1';
-								first_warning(23) <= '1';
-								
-							when "00111"  =>
-								first_warning(16) <= '1';
-								first_warning(29) <= '1';
-								
-							when "00110"  =>
-								first_warning(17) <= '1';
-								first_warning(28) <= '1';
-					
-							when "00101"  =>
-								first_warning(18) <= '1';
-								first_warning(27) <= '1';
-								
-							-- Delay of 0.5s ~ 1.25s
-							when "00000" =>
-								pattern_num <= "00";
-								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
-							when others =>
-								NULL;
-						end case;
-					else 
-				-- 		|X|X|X|_|_|_|X|X|_|_|_|X|X|B|HP|HP|
-				-- 		|>|_|_|_|_|_|_|_|_|_|_|_|_|<|HP|HP|
-						case pattern_count is
-							when "01111" =>
-								reverse_arrow_pixel(0) <= '1';
-								arrow_pixel(12) <= '1';
-							when "01101"  =>
-								first_warning(6) <= '1';
-								first_warning(7) <= '1';
-								
-							when "00111"  => 
-								first_warning(0) <= '1';
-								first_warning(12) <= '1';
-								
-							when "00110"  =>
-								first_warning(1) <= '1';
-								first_warning(11) <= '1';
-					
-							when "00101"  =>
-								first_warning(2) <= '1';
-	
-							-- Delay of 0.5s ~ 1.25s
-							when "00000" =>
-								pattern_num <= "00";
-								pattern_count <= "00010" + ("000" & random_count(1 downto 0));
-							when others =>
-								NULL;
-						end case;
-					end if;
-				end if;
          end if;
       end if;
    end process;
 
-   --stage data Àü´Ş
+   --stage data ì „ë‹¬
    stage <= stage_data;
 
   
-   --FPGA µ¿ÀÛ°ú, ÄğÅ¸ÀÓ¼³Á¤, ÃÊ±â°ª, CLK ¿¡µû¸¥ Àü¹İÀûÀÎ move
+   --FPGA ë™ì‘ê³¼, ì¿¨íƒ€ì„ì„¤ì •, ì´ˆê¸°ê°’, CLK ì—ë”°ë¥¸ ì „ë°˜ì ì¸ move
    process(FPGA_RSTB,clk,attack_1_trans,attack_2_trans,move_clk)
    variable move_cnt_1 : integer range 0 to 1000000;
    variable move_cnt_2 : integer range 0 to 1000000;
    variable shield_cnt : integer range 0 to 3000000;
    begin
-		--ÃÊ±âÈ­ ½Ã ¼³Á¤°ª
+		--ì´ˆê¸°í™” ì‹œ ì„¤ì •ê°’
       if(FPGA_RSTB = '0')then
          for i in 0 to 31 loop
             hit_on(i) <= '0';
@@ -1459,7 +1466,7 @@ begin
 			hitted_cnt <= "00000";
 			boss_dead <= '0';
       elsif(clk'event and clk='1')then
-		--playerÀÇ ÇÇ°İ¿¡ µû¸¥ ÄğÅ¸ÀÓ
+		--playerì˜ í”¼ê²©ì— ë”°ë¥¸ ì¿¨íƒ€ì„
          if (shield_admit='1') then
             shield_cnt:= shield_cnt +1;
             if(shield_cnt=3000000) then
@@ -1468,7 +1475,7 @@ begin
             end if;
          end if;
          if (move_admit_1 = '0') then
-			--player1 ÀÇ ¿òÁ÷ÀÓ¿¡ µû¸¥ ÄğÅ¸ÀÓ
+			--player1 ì˜ ì›€ì§ì„ì— ë”°ë¥¸ ì¿¨íƒ€ì„
             move_cnt_1 := move_cnt_1 + 1;
             if (move_cnt_1 = 1000000) then
                move_cnt_1 := 0;
@@ -1476,7 +1483,7 @@ begin
             end if;
          end if;
          if (move_admit_2 = '0') then
-			--player2 ÀÇ ¿òÁ÷ÀÓ¿¡ µû¸¥ ÄğÅ¸ÀÓ
+			--player2 ì˜ ì›€ì§ì„ì— ë”°ë¥¸ ì¿¨íƒ€ì„
             move_cnt_2 := move_cnt_2 + 1;
             if (move_cnt_2 = 1000000) then
                move_cnt_2 := 0;
@@ -1521,7 +1528,7 @@ begin
             reg_file(29) <= X"54";
             reg_file(30) <= X"4F";
             reg_file(31) <= X"4E";
-            --ÀÔ·ÂÀÌ µé¾î¿À¸é, game start
+            --ì…ë ¥ì´ ë“¤ì–´ì˜¤ë©´, game start
             if ((left_1 = '0') or (left_2 = '0') or (right_1 = '0') or (right_2 = '0') or (updown_1 = '0') or (updown_2 = '0')) then
                reg_file <= clear_reg; -- Clear LCD Screen
                stage_data <= "01"; -- Start stage
@@ -1532,11 +1539,11 @@ begin
                shield_admit<= '1';
             end if;
          elsif( game_over = '0') then
-               --player ÀÌµ¿
+               --player ì´ë™
 					
-            --player1 ¿ŞÂÊÀ¸·Î ÀÌµ¿ ¼³Á¤
+            --player1 ì™¼ìª½ìœ¼ë¡œ ì´ë™ ì„¤ì •
             if (left_1 = '0' and move_admit_1 = '1') then
-               --player1 ¿ŞÂÊ ÇÑ°è ¼³Á¤
+               --player1 ì™¼ìª½ í•œê³„ ì„¤ì •
                if( p1_curSt = 0 or p1_curSt = 16 ) then
                   p1_curSt <= p1_curSt;
                   p1_preSt <= p1_preSt;
@@ -1545,9 +1552,9 @@ begin
                   p1_curSt <= p1_curSt - 1;
                   move_admit_1 <= '0';
                end if;
-            --player1 ¿À¸¥ÂÊÀ¸·Î ÀÌµ¿ ¼³Á¤
+            --player1 ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì´ë™ ì„¤ì •
             elsif (right_1 = '0' and move_admit_1 = '1') then
-               --player1 ¿À¸¥ÂÊ ÇÑ°è ¼³Á¤
+               --player1 ì˜¤ë¥¸ìª½ í•œê³„ ì„¤ì •
                if( p1_curSt = 12 or p1_curSt = 29) then
                   p1_curSt <= p1_curSt;
                   p1_preSt <= p1_preSt;
@@ -1556,7 +1563,7 @@ begin
                   p1_curSt <= p1_curSt + 1;
                   move_admit_1 <= '0';
                end if;   
-            --player1 À§/¾Æ·¡ ÁÙ ¹Ù²Ş ¼³Á¤
+            --player1 ìœ„/ì•„ë˜ ì¤„ ë°”ê¿ˆ ì„¤ì •
             elsif (updown_1 = '0' and move_admit_1 = '1') then
                if( p1_curSt = 29) then
                   p1_curSt <= p1_curSt;
@@ -1574,9 +1581,9 @@ begin
                end if;
             end if;
             
-            --player2 ¿ŞÂÊÀ¸·Î ÀÌµ¿ ¼³Á¤
+            --player2 ì™¼ìª½ìœ¼ë¡œ ì´ë™ ì„¤ì •
             if (left_2 = '0' and move_admit_2 = '1') then
-               --player2 ¿ŞÂÊ ÇÑ°è ¼³Á¤
+               --player2 ì™¼ìª½ í•œê³„ ì„¤ì •
                if( p2_curSt = 0 or p2_curSt = 16 ) then
                   p2_curSt <= p2_curSt;
                   p2_preSt <= p2_preSt;
@@ -1585,9 +1592,9 @@ begin
                   p2_curSt <= p2_curSt - 1;
                   move_admit_2 <= '0';
                end if;
-            --player2 ¿À¸¥ÂÊÀ¸·Î ÀÌµ¿ ¼³Á¤
+            --player2 ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì´ë™ ì„¤ì •
             elsif (right_2 = '0' and move_admit_2 = '1') then
-               --player2 ¿À¸¥ÂÊ ÇÑ°è ¼³Á¤
+               --player2 ì˜¤ë¥¸ìª½ í•œê³„ ì„¤ì •
                if( p2_curSt = 12 or p2_curSt = 29) then
                   p2_curSt <= p2_curSt;
                   p2_preSt <= p2_preSt;
@@ -1597,7 +1604,7 @@ begin
                   move_admit_2 <= '0';
                end if;    
             
-            --player2 À§/¾Æ·¡ ÁÙ ¹Ù²Ş ¼³Á¤
+            --player2 ìœ„/ì•„ë˜ ì¤„ ë°”ê¿ˆ ì„¤ì •
             elsif (updown_2 = '0' and move_admit_2 = '1') then
                if( p2_curSt = 29) then
                   p2_curSt <= p2_curSt;
@@ -1620,8 +1627,8 @@ begin
             if(attack_2_trans = '0')then
                attack_2<='0';
             end if;
-            --player °ø°İ
-            --player°¡ ¸ó½ºÅÍ¿Í ÀÏÁ¤ °Å¸® ¾È¿¡¼­ °ãÃÆÀ» ¶§ °ø°İ
+            --player ê³µê²©
+            --playerê°€ ëª¬ìŠ¤í„°ì™€ ì¼ì • ê±°ë¦¬ ì•ˆì—ì„œ ê²¹ì³¤ì„ ë•Œ ê³µê²©
             if (special = '1') then
 					if reattack_1 = '1' and reattack_2='1' then
 						if (p1_curSt = 29) then	
@@ -1654,9 +1661,9 @@ begin
 						end if;	
 					end if;
 					
-            --player°¡ °ãÄ¡Áö ¾ÊÀº °æ¿ì
+            --playerê°€ ê²¹ì¹˜ì§€ ì•Šì€ ê²½ìš°
             else
-					--player1 °ø°İ ¼³Á¤
+					--player1 ê³µê²© ì„¤ì •
                if (reattack_1 = '1') then
                   if (p1_curSt = 12) then
                      if (right_1 = '0') then
@@ -1679,7 +1686,7 @@ begin
                   end if;
                end if;
 					
-					--player2 °ø°İ ¼³Á¤
+					--player2 ê³µê²© ì„¤ì •
                if (reattack_2 = '1') then
                   if (p2_curSt = 12) then
                      if (right_2 = '0') then
@@ -1703,28 +1710,28 @@ begin
                end if;
             end if;
             
-            --monster°ü·Ã hit_on and reg_file ´ëÀÔ
+            --monsterê´€ë ¨ hit_on and reg_file ëŒ€ì…
             for i in 0 to 31 loop
-               -- ë³´ìŠ¤ „ì¹˜/Œë ˆ´ì–´ Òú´ë ¥ œì‹œ „ì¹˜/ë³´ìŠ¤ Òú´ë ¥ œì‹œ „ì¹˜ë¥œì™¸½ìì„œ
+               -- ê²Œì„ í”Œë ˆì´ê°€ ì´ë£¨ì–´ì§€ëŠ” í”½ì…€ ì•ˆì—ì„œ
                if ((i /= 13) or (i /= 14) or (i /= 15) or (i /= 30) or (i /= 31)) then
-                  -- ¼ê²© ì • ì´ˆê¸°
+                  -- í”¼ê²© íŒì •ì„ ë‚˜íƒ€ë‚´ëŠ” hit_onì„ loop ì‹œì‘ì‹œ ì´ˆê¸°í™”
                   hit_on(i) <= '0';
-                  
-                  --ê·ì¹¸ì— ”ì‚´ˆìœ¼×¼: "<"  & ¼ê²©ì • ON
+                  --í™”ì‚´ì´ í•´ë‹¹ pixelì— ìˆëŠ” ìƒíƒœë¼ë©´ "<" í‘œì‹œ ë° í”¼ê²© íŒì • ON
                   if (arrow_pixel(i) = '1') then
                      hit_on(i) <= '1';
                      reg_file(i) <= X"3C";
-                  -- ”ì‚´†ìœ¼×¼´ì„œ/½ì °œ ¨ê³¼ê°  ˆìœ¼×¼: "ê¹Œë§Œ ¤ëª¨" & ¼ê²©ì • ON
+                  -- ì—­ë°©í–¥ í™”ì‚´ì´ í•´ë‹¹ pixelì— ìˆëŠ” ìƒíƒœë¼ë©´ ">" í‘œì‹œ ë° í”¼ê²© íŒì • ON
 						elsif (reverse_arrow_pixel(i) = '1') then
 							hit_on(i) <= '1';
 							reg_file(i) <= X"3E";
+		  -- pixel í­ë°œì´ í•´ë‹¹ pixelì— ìˆëŠ” ìƒíƒœë¼ë©´ "ê¹Œë§Œ ë„¤ëª¨" í‘œì‹œ ë° í”¼ê²© íŒì • ON
                   elsif (pixel_explosion(i) = '1') then
                      hit_on(i) <= '1';
                      reg_file(i) <= X"FF";
-                  -- ”ì‚´/½ì °œ ¨ê³¼ê°  †ìœ¼×¼´ì„œ ê²½ê³  ¨ê³¼ ì¡´ì¬ : "!"
+                  -- ì²«ë²ˆì¨° ê²½ê³ / ë‘ë²ˆì§¸ ê²½ê³ ê°€ í•´ë‹¹ pixelì— ìˆëŠ” ìƒíƒœë¼ë©´ "!" í‘œì‹œ
                   elsif ((first_warning(i) = '1') or (second_warning(i) = '1')) then
                      reg_file(i) <= X"21";
-
+                  -- ì „ë¶€ ì•„ë‹˜ : ë¹ˆì¹¸ìœ¼ë¡œ ë³€ê²½
                   else
                      reg_file(i) <= X"20";
                   end if;
@@ -1732,9 +1739,10 @@ begin
                end if;
                
             end loop;
+            --ë³´ìŠ¤ ëª¬ìŠ¤í„° í•­ìƒ í‘œì‹œ
             reg_file(13) <= X"03";
-				
             if (stage_data /= "00") then
+            --CGRAMì— ì…ë ¥í•œ ë°°í„°ë¦¬ë¥¼ ì´ìš©í•˜ì—¬ ë³´ìŠ¤ ì²´ë ¥ í‘œì‹œ
                case Mhp is
                   when 8 => reg_file(30) <= X"FF";
                             reg_file(31) <= X"FF";
@@ -1756,8 +1764,8 @@ begin
                             reg_file(31) <= X"20";
                   when others => Null;
                end case;
-               
-               
+     
+            --ASCII code ê¸°í˜¸ë¥¼ ì´ìš©í•˜ì—¬ í”Œë ˆì´ì–´ ì²´ë ¥ í‘œì‹œ
                case Uhp is
                   when 4 => reg_file(14) <= X"2A";
                             reg_file(15) <= X"2A";
@@ -1773,7 +1781,7 @@ begin
                end case;
             end if;
 				
-				--´ÙÀ½ ½ºÅ×ÀÌÁö·Î ³Ñ¾î°¡±â
+				--ë³´ìŠ¤ ì‚¬ë§ : ë‹¤ìŒ ìŠ¤í…Œì´ì§€ë¡œ ë„˜ì–´ê°€ê¸°
 				if (boss_dead = '1') then
 					hitted_cnt <= 4 - Uhp + hitted_cnt;
 					Uhp <= 4;
@@ -1797,7 +1805,7 @@ begin
 					p2_curSt <= 16;
 				end if;
 				
-            --player ÇÇ°İ¿¡ µû¸¥ hp °¨¼Ò
+            --player í”¼ê²©ì— ë”°ë¥¸ hp ê°ì†Œ
             if (shield_admit = '0' and invin = '0' and((hit_on(p1_curSt) = '1') or (hit_on(p2_curSt) = '1'))) then
                if (Uhp = 0) then
                   game_over <= '1';
@@ -1807,7 +1815,7 @@ begin
                end if;
             end if;
             
-               --player1°ú  player2°¡ °ãÃÆÀ» ¶§
+               --player1ê³¼  player2ê°€ ê²¹ì³¤ì„ ë•Œ
             if (p1_curSt = p2_curSt) then
                reg_file(p1_curSt) <= X"02";
                if (p1_curSt >= 10 and p1_curSt < 13) or (p1_curSt >= 26 and p1_curSt <= 29) then
@@ -1815,26 +1823,26 @@ begin
                else
                   special <= '0';
                end if;
-            --player1 ÀÌÀü À§Ä¡¿Í player2 ÇöÀç À§Ä¡°¡ °ãÃÆÀ» ¶§ : player2 ÇöÀç »óÅÂ°¡ ¿ì¼±
+            --player1 ì´ì „ ìœ„ì¹˜ì™€ player2 í˜„ì¬ ìœ„ì¹˜ê°€ ê²¹ì³¤ì„ ë•Œ : player2 í˜„ì¬ ìƒíƒœê°€ ìš°ì„ 
             elsif (p2_curSt = p1_preSt) then
                special <= '0';
                reg_file(p1_curSt) <= X"00";
                reg_file(p2_curSt) <= X"01";
-            --player2 ÀÌÀü À§Ä¡¿Í player1 ÇöÀç À§Ä¡°¡ °ãÃÆÀ» ¶§ : player1 ÇöÀç »óÅÂ°¡ ¿ì¼±
+            --player2 ì´ì „ ìœ„ì¹˜ì™€ player1 í˜„ì¬ ìœ„ì¹˜ê°€ ê²¹ì³¤ì„ ë•Œ : player1 í˜„ì¬ ìƒíƒœê°€ ìš°ì„ 
             elsif (p1_curSt = p2_preSt) then
                special <= '0';
                reg_file(p1_curSt) <= X"00";
                reg_file(p2_curSt) <= X"01";             
-            --player À§Ä¡ reg_file·Î Àü´Ş(LCD DATA)
+            --player ìœ„ì¹˜ reg_fileë¡œ ì „ë‹¬(LCD DATA)
             else
                special <= '0';
                reg_file(p1_curSt) <= X"00";
                reg_file(p2_curSt) <= X"01";
             end if;
          
-			--gameÀÌ ³¡³µÀ» ¶§
+			--gameì´ ëë‚¬ì„ ë•Œ
          else
-				--¸ğµç stage clear 
+				--ëª¨ë“  stage clear 
 				if (game_clear = '1') then
 					reg_file(0) <= X"20";
 					reg_file(1) <= X"20";
@@ -1844,7 +1852,7 @@ begin
 					reg_file(5) <= X"52";--R
 					reg_file(6) <= X"45";--E
 					reg_file(7) <= X"20";
-					reg_file(8) <=score_cnt(15 downto 12) + X"30";--Á¡¼ö Ç¥Çö
+					reg_file(8) <=score_cnt(15 downto 12) + X"30";--ì ìˆ˜ í‘œí˜„
 					reg_file(9) <= score_cnt(11 downto 8) + X"30";
 					reg_file(10) <= score_cnt(7 downto 4) + X"30";
 					reg_file(11) <= score_cnt(3 downto 0) + X"30";
@@ -1864,12 +1872,12 @@ begin
 					reg_file(25) <= X"46";--F
 					reg_file(26) <= X"45";--E
 					reg_file(27) <= X"20";
-					reg_file(28) <= hitted_cnt_ten + X"30";--LIFE Ç¥Çö
+					reg_file(28) <= hitted_cnt_ten + X"30";--LIFE í‘œí˜„
 					reg_file(29) <= hitted_cnt + X"30";
 					reg_file(30) <= X"20";
 					reg_file(31) <= X"20";
 					
-				--GAME OVER (¸ğµç stage°¡ ³¡³ª±â Àü¿¡ player hp°¡ 0ÀÌµÈ °æ¿ì)
+				--GAME OVER (ëª¨ë“  stageê°€ ëë‚˜ê¸° ì „ì— player hpê°€ 0ì´ëœ ê²½ìš°)
 				else
 					reg_file(0) <= X"20";
 					reg_file(1) <= X"20";
@@ -1916,12 +1924,12 @@ process(FPGA_RSTB, clk)
          cnt <= (others => '0');
          data_out <= '0';
       elsif clk='1' and clk'event then
-		--lcdtest ·Î data ¿Í addr¸¦ Àü´Ş
+		--lcdtest ë¡œ data ì™€ addrë¥¼ ì „ë‹¬
          if w_enable = '1' then
             data <= reg_file (conv_integer(cnt));
             addr <= cnt;
             data_out <= '1';
-            if cnt= X"1F" then--regfile(31)±îÁö ÀúÀå
+            if cnt= X"1F" then--regfile(31)ê¹Œì§€ ì €ì¥
                cnt <= (others =>'0');
             else
                cnt <= cnt + 1;
@@ -1943,7 +1951,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity digital_clock is
     Port ( FPGA_RSTB: in  STD_LOGIC;
            CLK : in  STD_LOGIC;
-           attack_1: inout std_logic;--attack º¯¼ö
+           attack_1: inout std_logic;--attack ë³€ìˆ˜
            attack_2: inout std_logic;
            DIGIT : out  STD_LOGIC_VECTOR (6 downto 1);
            SEG_A : out  STD_LOGIC;
@@ -1963,9 +1971,9 @@ entity digital_clock is
 end digital_clock;
 
 architecture Behavioral of digital_clock is
---³»ºÎ½ÅÈ£
+--ë‚´ë¶€ì‹ í˜¸
 signal s01_clk:std_logic;--1Hz clock
---s01_clk¿¡ ¸Â°Ô count µÇ´Â ½Ã°£ º¯¼ö
+--s01_clkì— ë§ê²Œ count ë˜ëŠ” ì‹œê°„ ë³€ìˆ˜
 signal cool1:std_logic_vector(3 downto 0);
 signal cool2:std_logic_vector(3 downto 0);
 signal min10_cnt,min01_cnt:std_logic_vector(3 downto 0);
@@ -1983,48 +1991,48 @@ begin
    process(sel)
    begin
       case sel is
-      --segment Ã¹¹øÂ° ÀÚ¸®: ºĞÀÇ ½ÊÀÇÀÚ¸®
+      --segment ì²«ë²ˆì§¸ ìë¦¬: ë¶„ì˜ ì‹­ì˜ìë¦¬
          when "000"=> DIGIT<="000001";
                         data<=min10_cnt;
-      --segment µÎ¹øÂ° ÀÚ¸®: ºĞÀÇ ÀÏÀÇÀÚ¸®
+      --segment ë‘ë²ˆì§¸ ìë¦¬: ë¶„ì˜ ì¼ì˜ìë¦¬
          when "001"=> DIGIT<="000010";
                         data<=min01_cnt;
-      --segment ¼¼¹øÂ° ÀÚ¸®: ÃÊ ½ÊÀÇÀÚ¸®
+      --segment ì„¸ë²ˆì§¸ ìë¦¬: ì´ˆ ì‹­ì˜ìë¦¬
          when "010"=> DIGIT<="000100";
                         data<=sec10_cnt;
-      --segment ³×¹øÂ° ÀÚ¸®: ÃÊÀÇ ÀÏÀÇÀÚ¸®
+      --segment ë„¤ë²ˆì§¸ ìë¦¬: ì´ˆì˜ ì¼ì˜ìë¦¬
          when "011"=> DIGIT<="001000";
                         data<=sec01_cnt;
-      --segment ´Ù¼¸¹øÂ° ÀÚ¸®: player1 attack cooltime
+      --segment ë‹¤ì„¯ë²ˆì§¸ ìë¦¬: player1 attack cooltime
          when "100"=> DIGIT<="010000";
                         data<=cool1;
-      --segment ¿©¼¸¹øÂ° ÀÚ¸®: player2 attack cooltime
+      --segment ì—¬ì„¯ë²ˆì§¸ ìë¦¬: player2 attack cooltime
          when "101"=> DIGIT<="100000";
                         data<=cool2;
          when others => null;
       end case;
    end process;
    
-   --ºü¸¥ seg_clk¿¡ µû¶ó digitÀ» ¹Ù²Ù¸é¼­ °á°úµµÃâ, À°¾ÈÀ¸·Ğ ¿¬¼ÓÀ» º¸ÀÓ
+   --ë¹ ë¥¸ seg_clkì— ë”°ë¼ digitì„ ë°”ê¾¸ë©´ì„œ ê²°ê³¼ë„ì¶œ, ìœ¡ì•ˆìœ¼ë¡  ì—°ì†ì„ ë³´ì„
    process(FPGA_RSTB,clk)
-   --4MHZ>20kHZÀ» À§ÇÑ »õ·Î¿î clk º¯¼ö ¼±¾ğ
+   --4MHZ>20kHZì„ ìœ„í•œ ìƒˆë¡œìš´ clk ë³€ìˆ˜ ì„ ì–¸
    variable seg_clk_cnt:integer range 0 to 200;
    begin
       if(FPGA_RSTB='0')then
          sel<="000";
          seg_clk_cnt:=0;
       elsif(clk'event and clk='1')then
-      --200ÀÌ µÇ¸é 0À¸·Î ´Ù½Ã ÃÊ±âÈ­
+      --200ì´ ë˜ë©´ 0ìœ¼ë¡œ ë‹¤ì‹œ ì´ˆê¸°í™”
          if(seg_clk_cnt=200)then
             seg_clk_cnt:=0;
-            --200ÀÌ ¾Æ´Ï¸é ½Ã>ºĞ>ÃÊ ·Î ÀÚ¸® ¿Å±è
+            --200ì´ ì•„ë‹ˆë©´ ì‹œ>ë¶„>ì´ˆ ë¡œ ìë¦¬ ì˜®ê¹€
             if(sel="101")then
                sel<="000";
             else
                sel<= sel+1;
             end if;
          else
-         --200ÀÌ ¾Æ´Ï¸é clk º¯¼ö +1
+         --200ì´ ì•„ë‹ˆë©´ clk ë³€ìˆ˜ +1
             seg_clk_cnt:=seg_clk_cnt+1;
          end if;
       end if;
@@ -2032,7 +2040,7 @@ begin
    
    process(data)
    begin
-   --segment display¸¦ À§ÇÑ array ¼³Á¤
+   --segment displayë¥¼ ìœ„í•œ array ì„¤ì •
       case data is
          when "0000"=>seg<="00111111";--data displayed:0
          when "0001"=>seg<="00000110";--data displayed:1
@@ -2062,21 +2070,21 @@ begin
    SEG_G<=seg(6);
    SEG_DP<=seg(7);
    
-   --1HZÀÇ clock(s01_clk)±¸Çö, 1ÃÊ¿¡ ÇØ´ç
+   --1HZì˜ clock(s01_clk)êµ¬í˜„, 1ì´ˆì— í•´ë‹¹
    process(FPGA_RSTB,clk)
-   --1HZ¸¦ ±¸ÇöÇÏ±âÀ§ÇÑ clk º¯¼ö count_clk ¼±¾ğ
+   --1HZë¥¼ êµ¬í˜„í•˜ê¸°ìœ„í•œ clk ë³€ìˆ˜ count_clk ì„ ì–¸
    variable count_clk:integer range 0 to 2000000;
    begin
       if(FPGA_RSTB='0')then
          s01_clk<='1';
          count_clk:=0;
       elsif(clk'event and clk='1')then
-      --0.5ÃÊ ÁÖ±âÀÇ clkÀ¸·Î clk °ª º¯È­, 2000000 ¼¼°í 0>1,1>0À¸·Î ¹Ù²Ş
+      --0.5ì´ˆ ì£¼ê¸°ì˜ clkìœ¼ë¡œ clk ê°’ ë³€í™”, 2000000 ì„¸ê³  0>1,1>0ìœ¼ë¡œ ë°”ê¿ˆ
          if(count_clk=2000000)then
             count_clk:=0;
             s01_clk<=not s01_clk;
          else
-         --2000000À» ¾È¼¼¸é 1¾¿ ¿Ã¸²
+         --2000000ì„ ì•ˆì„¸ë©´ 1ì”© ì˜¬ë¦¼
             count_clk:=count_clk+1;
             s01_clk<=s01_clk;
          end if;
@@ -2085,47 +2093,47 @@ begin
    
 	reattack_1 <= reattack_1_temp;
 	reattack_2 <= reattack_2_temp;
-   process(s01_clk,FPGA_RSTB,attack_1)-- player1 °ø°İ½Ã ÄğÅ¸ÀÓ Ç¥Çö
+   process(s01_clk,FPGA_RSTB,attack_1)-- player1 ê³µê²©ì‹œ ì¿¨íƒ€ì„ í‘œí˜„
    begin
-      if (FPGA_RSTB='0')then--3ÃÊÀÇ ÄğÅ¸ÀÓ, Àç°ø°İ ½Ã±×³Î:1, datagenÀ¸·Î Àü´Ş
+      if (FPGA_RSTB='0')then--3ì´ˆì˜ ì¿¨íƒ€ì„, ì¬ê³µê²© ì‹œê·¸ë„:1, datagenìœ¼ë¡œ ì „ë‹¬
          cool_cnt1<="0000"; 
 			attack_1_trans <= '1';
 			reattack_1_temp <= '1';
       elsif(attack_1='1' and reattack_1_temp = '1')then
-         cool_cnt1<="0010";--ÄğÅ¸ÀÓ 3ÃÊ
-         attack_1_trans<='0';--attack½ÅÈ£¸¦ datagen¿¡¼­ 0À¸·Î ÃÊ±âÈ­
-         reattack_1_temp <= '0';--Àç°ø°İ X½ÅÈ£¸¦ datagen Àü´Ş
+         cool_cnt1<="0010";--ì¿¨íƒ€ì„ 3ì´ˆ
+         attack_1_trans<='0';--attackì‹ í˜¸ë¥¼ datagenì—ì„œ 0ìœ¼ë¡œ ì´ˆê¸°í™”
+         reattack_1_temp <= '0';--ì¬ê³µê²© Xì‹ í˜¸ë¥¼ datagen ì „ë‹¬
       elsif(s01_clk = '1' and s01_clk'event)then
          if (cool_cnt1 > "0000")then
             attack_1_trans<='1';
             cool_cnt1<=cool_cnt1-1;
-         else reattack_1_temp<='1';--0ÃÊ°¡ µÇ¸é,Àç°ø°İ °¡´É
+         else reattack_1_temp<='1';--0ì´ˆê°€ ë˜ë©´,ì¬ê³µê²© ê°€ëŠ¥
          end if;
       end if;
       
-   cool1<=cool_cnt1;--½Ã°£data Àü´Ş
+   cool1<=cool_cnt1;--ì‹œê°„data ì „ë‹¬
    end process;
       
-   process(s01_clk,FPGA_RSTB,attack_2)-- player2 °ø°İ½Ã ÄğÅ¸ÀÓ Ç¥Çö
+   process(s01_clk,FPGA_RSTB,attack_2)-- player2 ê³µê²©ì‹œ ì¿¨íƒ€ì„ í‘œí˜„
    begin
-      if (FPGA_RSTB='0')then--3ÃÊÀÇ ÄğÅ¸ÀÓ, Àç°ø°İ ½Ã±×³Î:1, datagenÀ¸·Î Àü´Ş
+      if (FPGA_RSTB='0')then--3ì´ˆì˜ ì¿¨íƒ€ì„, ì¬ê³µê²© ì‹œê·¸ë„:1, datagenìœ¼ë¡œ ì „ë‹¬
          cool_cnt2<="0000";
 			reattack_2_temp<='1';
 			attack_2_trans <= '1';
       elsif(attack_2='1' and reattack_2_temp = '1')then
-         attack_2_trans<='0';--attack½ÅÈ£¸¦ datagen¿¡¼­ 0À¸·Î ÃÊ±âÈ­
-         cool_cnt2<="0010";--ÄğÅ¸ÀÓ 3ÃÊ
-         reattack_2_temp<='0';--Àç°ø°İ X½ÅÈ£¸¦ datagen Àü´Ş
+         attack_2_trans<='0';--attackì‹ í˜¸ë¥¼ datagenì—ì„œ 0ìœ¼ë¡œ ì´ˆê¸°í™”
+         cool_cnt2<="0010";--ì¿¨íƒ€ì„ 3ì´ˆ
+         reattack_2_temp<='0';--ì¬ê³µê²© Xì‹ í˜¸ë¥¼ datagen ì „ë‹¬
       elsif(s01_clk = '1' and s01_clk'event)then
          if (cool_cnt2 > "0000")then
             attack_2_trans<='1';
             cool_cnt2<=cool_cnt2-1;
          else
-            reattack_2_temp<='1';--0ÃÊ°¡ µÇ¸é,Àç°ø°İ °¡´É
+            reattack_2_temp<='1';--0ì´ˆê°€ ë˜ë©´,ì¬ê³µê²© ê°€ëŠ¥
          end if;
       end if;
       
-   cool2<=cool_cnt2;--½Ã°£ data Àü´Ş
+   cool2<=cool_cnt2;--ì‹œê°„ data ì „ë‹¬
    end process;
    
    process(s01_clk,FPGA_RSTB,stage)
@@ -2133,43 +2141,43 @@ begin
    variable s10_cnt,s01_cnt:std_logic_vector(3 downto 0);
    begin
       if(FPGA_RSTB='0')then
-         --LED00:00:00ÃÊ±âÈ­
+         --LED00:00:00ì´ˆê¸°í™”
          m10_cnt:="0000";
          m01_cnt:="0000";
          s10_cnt:="0000";
          s01_cnt:="0000";
       elsif(s01_clk='1' and s01_clk'event and stage>="01")then
-      --1Hz clockÀÌ risingÀÌ¸é 1ÃÊ Áõ°¡
+      --1Hz clockì´ risingì´ë©´ 1ì´ˆ ì¦ê°€
       s01_cnt:=s01_cnt+1;
          if(s01_cnt>"1001")then
-         --ÃÊÀÇ 1ÀÇÀÚ¸®¼ö°¡10ÀÌµÇ¸é ÃÊÀÇ10ÀÇÀÚ¸®¼ö Áõ°¡
+         --ì´ˆì˜ 1ì˜ìë¦¬ìˆ˜ê°€10ì´ë˜ë©´ ì´ˆì˜10ì˜ìë¦¬ìˆ˜ ì¦ê°€
             s01_cnt:="0000";
             s10_cnt:=s10_cnt+1;
          end if;
          if(s10_cnt>"0101")then
-         --ÃÊÀÇ 10ÀÇÀÚ¸®¼ö°¡6ÀÌµÇ¸é ºĞÀÇ1ÀÇ ÀÚ¸®¼ö Áõ°¡
+         --ì´ˆì˜ 10ì˜ìë¦¬ìˆ˜ê°€6ì´ë˜ë©´ ë¶„ì˜1ì˜ ìë¦¬ìˆ˜ ì¦ê°€
             s10_cnt:="0000";
             m01_cnt:=m01_cnt+1;
          end if;
          if(m01_cnt>"1001")then
-         --ºĞÀÇ 1ÀÇÀÚ¸®¼ö°¡10ÀÌµÇ¸é ºĞÀÇ10ÀÇ ÀÚ¸®¼ö Áõ°¡
+         --ë¶„ì˜ 1ì˜ìë¦¬ìˆ˜ê°€10ì´ë˜ë©´ ë¶„ì˜10ì˜ ìë¦¬ìˆ˜ ì¦ê°€
             m01_cnt:="0000";
             m10_cnt:=m10_cnt+1;
          end if;
          if(m10_cnt>"0101")then
-         --ºĞÀÇ 10ÀÇÀÚ¸®¼ö°¡10ÀÌµÇ¸é ÃÊ±âÈ­
+         --ë¶„ì˜ 10ì˜ìë¦¬ìˆ˜ê°€10ì´ë˜ë©´ ì´ˆê¸°í™”
             m10_cnt:="0000";
             m01_cnt:="0000";
             s10_cnt:="0000";
             s01_cnt:="0000";
          end if;
       end if;
-   --°è»êµÈ ½Ã°£°ªÀ» ¸ÅÄª
+   --ê³„ì‚°ëœ ì‹œê°„ê°’ì„ ë§¤ì¹­
    sec01_cnt<=s01_cnt;
    sec10_cnt<=s10_cnt;
    min01_cnt<=m01_cnt;
    min10_cnt<=m10_cnt;
-	--½Ã°£data¸¦ ÇÕÃÄ¼­ datagen¿¡¼­ ¿¬»ê
+	--ì‹œê°„dataë¥¼ í•©ì³ì„œ datagenì—ì„œ ì—°ì‚°
 	score<= min10_cnt & min01_cnt & sec10_cnt & sec01_cnt;
    end process;
    
