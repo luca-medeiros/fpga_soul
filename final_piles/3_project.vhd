@@ -1792,10 +1792,6 @@ begin
 						score_cnt(11 downto 8)<="1001"-score(11 downto 8);
 						score_cnt(7 downto 4)<="1001"-score(7 downto 4);
 						score_cnt(3 downto 0)<="1001"-score(3 downto 0);
-						if (hitted_cnt >= 10) then
-							hitted_cnt <= hitted_cnt - 10;
-							hitted_cnt_ten <= hitted_cnt_ten + 1;
-						end if;
 						game_clear <= '1';
 						game_over <= '1';
 					else
@@ -1844,6 +1840,10 @@ begin
          else
 				--모든 stage clear 
 				if (game_clear = '1') then
+					if (hitted_cnt >= 10) then
+						hitted_cnt <= hitted_cnt - 10;
+						hitted_cnt_ten <= hitted_cnt_ten + 1;
+					end if;
 					reg_file(0) <= X"20";
 					reg_file(1) <= X"20";
 					reg_file(2) <= X"53";--S
